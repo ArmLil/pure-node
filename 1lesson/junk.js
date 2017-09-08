@@ -20,3 +20,11 @@
 //   }
 //   res.end();
 // });
+
+
+// const read = (fromFile, encoding, cb) => {
+// 	fs.readFile(fromFile, encoding, (err, data) => {
+// 		if (err) console.error('Opps', err)
+// 		cb(data)
+// 	})
+// }
