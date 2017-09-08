@@ -12,6 +12,7 @@ POST endpoint /tweets - in this endpoint you should be able to send tweets
 ]
 
 After recieving the tweet write it to a file, tweet.json
+
 GET endpoint /tweets - list respond with the tweets from the tweets.json file. (You will need to Google fs read from file)
 
 

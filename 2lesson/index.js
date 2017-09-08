@@ -22,7 +22,7 @@ const getPutData = (req, toFile) => {
 const server = http.createServer()
 
 server.on('request', (req, res) => {
-	const {method, url } = req;
+	const { method, url } = req;
 	const fileCreated = fs.existsSync('2lesson/tweets.json')
 
 	if(url == '/tweets') {
@@ -46,7 +46,7 @@ server.on('request', (req, res) => {
 		else res.end('Bad Request!...Choose correct endpoint and method, please!')
 	}
 
-  else if (url == '/' && method == 'GET') res.end('Hello there!')  
+  else if (url == '/' && method == 'GET') res.end('Hello there!')
   else res.end('Bad Request!...Choose correct endpoint and method, please!')
 });
 
