@@ -69,14 +69,14 @@ const update = (req, path) => {
 
 const requestHandle = (req) => {
   const { method, url, body } = req;
-	const fileExists = fs.existsSync(TWEETS_PATH)
+  const fileExists = fs.existsSync(TWEETS_PATH)
 
   if(url === '/tweets') {
-		if (method === 'POST' && !fileExists)
+    if (method === 'POST' && !fileExists)
       return create(req, TWEETS_PATH)
     else if (method == 'PUT' && fileExists)
-			return update(req, TWEETS_PATH)
-    else if (method == 'GET') {
+      return update(req, TWEETS_PATH)
+    else if (method == 'GET' && fileExists) {
       return read_file(TWEETS_PATH)
     }
     else return Promise.reject('Bad Request')
