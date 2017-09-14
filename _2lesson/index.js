@@ -46,24 +46,35 @@ const append_file = (path, body) => {
 
 const create = (req, path) => {
   return readBody(req)
-  .then((body) => {
-    return append_file(path, body)
+  .then((body) => append_file(path, body))
+  .then(response => {
+    return Object.assign({}, {
+      body: {
+        message: response
+      }
+    }, {
+      header: {
+        code: 201,
+        type: 'application/json',
+        message: response,
+      }
+    })
   })
 }
 
 const update = (req, path) => {
+  let localBody
   return readBody(req)
-  .then((body) => {
-    return read_file(path)
-    .then((data) => {
-      let tweetsArray = []
-      if(data) tweetsArray = JSON.parse(data).tweets
-      const bodyArray = JSON.parse(body).tweets
-      const newTweetsArray = tweetsArray.concat(bodyArray)
-      const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
-      const result = JSON.stringify(newTweetsObject, null, '\t')
-      return write_file(path, result)
-      })
+  .then((body) => localBody = body)
+  .then(() => read_file(path))
+  .then((data) => {
+    let tweetsArray = []
+    if(data) tweetsArray = JSON.parse(data).tweets
+    const bodyArray = JSON.parse(localBody).tweets
+    const newTweetsArray = tweetsArray.concat(bodyArray)
+    const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
+    const result = JSON.stringify(newTweetsObject, null, '\t')
+    return write_file(path, result)
   })
 }
 
@@ -92,8 +103,11 @@ const server = http.createServer()
 server.on('request', (req, res) => {
   return requestHandle(req)
     .then((response) => {
-      console.log(response)
-      res.end(response)
+      res.writeHead(response.header.code, response.header.message, {
+        'Content-Type': response.header.type
+      })
+      res.end(JSON.stringify(response.body))
+
     })
     .catch(error => {
       console.error('Opps', error)
