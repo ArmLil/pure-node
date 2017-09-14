@@ -4,13 +4,18 @@ const fs = require ('fs')
 const http = require('http')
 
 const getPutData = (req, toFile) => {
+
 	let body = []
 	req.on('data', (chunk) => {
+		console.log('getPutData')
 		body.push(chunk)
 		body = Buffer.concat(body).toString()
 	});
 	req.on('end', () => {
+		console.log('getPutData', body)
+
 		fs.appendFile(toFile, body, (err) => {
+			console.log('err', err)
 			if (err) {
 				console.error('Opps',err)
 				throw err
@@ -23,19 +28,20 @@ const server = http.createServer()
 
 server.on('request', (req, res) => {
 	const { method, url } = req;
-	const fileCreated = fs.existsSync('2lesson/tweets.json')
+	const fileCreated = fs.existsSync('./tweets.json')
 
 	if(url == '/tweets') {
 		if (!fileCreated && method == 'POST') {
-			getPutData(req, '2lesson/tweets.json')
+			console.log('fileCreated',!fileCreated)
+			getPutData(req, './tweets.json')
 			res.end('POST request, data have been created!')
 		}
 		else if (fileCreated && method == 'PUT') {
-			getPutData(req, '2lesson/tweets.json')
+			getPutData(req, './tweets.json')
 			res.end('PUT request, file has been updated!')
 		}
 		else if (fileCreated && method == 'GET') {
-			fs.readFile('2lesson/tweets.json', 'utf8', (err, tweets) => {
+			fs.readFile('./tweets.json', 'utf8', (err, tweets) => {
 				if (err) {
 					console.error('Opps', err)
 					throw err
