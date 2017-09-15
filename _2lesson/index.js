@@ -2,8 +2,10 @@
 
 const fs = require ('fs')
 const http = require('http')
+const pathModule = require('path')
 
 const TWEETS_PATH = './tweets.json'
+const FAVICON = pathModule.join(__dirname, 'public', 'favicon.ico');
 
 const readBody = (req) => {
   let body = []
@@ -74,7 +76,21 @@ const update = (req, path) => {
     const newTweetsArray = tweetsArray.concat(bodyArray)
     const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
     const result = JSON.stringify(newTweetsObject, null, '\t')
-    return write_file(path, result)
+    return result
+  })
+  .then((result) => write_file(path, result))
+  .then(response => {
+    return Object.assign({}, {
+      body: {
+        message: response
+      }
+    }, {
+      header: {
+        code: 200,
+        type: 'application/json',
+        message: response,
+      }
+    })
   })
 }
 
@@ -85,15 +101,39 @@ const requestHandle = (req) => {
   if(url === '/tweets') {
     if (method === 'POST' && !fileExists)
       return create(req, TWEETS_PATH)
-    else if (method == 'PUT' && fileExists)
+    else if (method === 'PUT' && fileExists)
       return update(req, TWEETS_PATH)
-    else if (method == 'GET' && fileExists) {
+    else if (method === 'GET' && fileExists) {
       return read_file(TWEETS_PATH)
+      .then(response => {
+        return Object.assign({}, {
+          body: {
+            message: response
+          }
+        }, {
+          header: {
+            code: 200,
+            type: 'text/plain',
+            message: 'GET request',
+          }
+        })
+      })
     }
     else return Promise.reject('Bad Request')
   }
-  else if (url == '/' && method == 'GET') {
-    return Promise.resolve("Hello there!!!")
+  else if (url === '/' && method === 'GET') {
+    return Promise
+    .resolve(Object.assign({}, {
+      body: {
+        message: 'GET request'
+      }
+    }, {
+      header: {
+        code: 200,
+        type: 'text/plain',
+        message: 'GET request',
+      }
+    }))
   }
   else return Promise.reject('Bad Request')
 }
@@ -101,13 +141,19 @@ const requestHandle = (req) => {
 const server = http.createServer()
 
 server.on('request', (req, res) => {
+  if (req.url === '/favicon.ico') {
+    res.writeHead(200, {'Content-Type': 'image/x-icon'} );
+    fs.createReadStream(FAVICON).pipe(res);
+    res.end();
+    return;
+  }
   return requestHandle(req)
     .then((response) => {
-      res.writeHead(response.header.code, response.header.message, {
-        'Content-Type': response.header.type
+      const { code, message, type } = response.header
+      res.writeHead(code, message, {
+        'Content-Type': type
       })
       res.end(JSON.stringify(response.body))
-
     })
     .catch(error => {
       console.error('Opps', error)
