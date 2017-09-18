@@ -1,11 +1,13 @@
 'use strict'
-
 const fs = require ('fs')
 const http = require('http')
 const pathModule = require('path')
-const pug = require('pug');
+const pug = require('pug')
 
 const TWEETS_PATH = './tweets.json'
+const TWEETS_TEMPLATE = './tweets.pug'
+
+
 const FAVICON = pathModule.join(__dirname, 'public', 'favicon.ico');
 
 const readBody = (req) => {
@@ -95,6 +97,19 @@ const update = (req, path) => {
   })
 }
 
+const createTweet = (tweet, path) => {
+  return readFile(path)
+    .then((data) => {
+      let tweetsArray = []
+      if(data) tweetsArray = JSON.parse(data).tweets
+      tweet.id = tweetsArray.length
+      const newTweetsArray = tweetsArray.concat(tweet)
+      const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
+      const result = JSON.stringify(newTweetsObject, null, '\t')
+      return result
+    })
+    .then((result) => writeFile(path, result))
+}
 //...use with html
 // const makeTweets = (tweets) => {
 //   let tweetsLocal = JSON.parse(tweets).tweets
@@ -105,51 +120,51 @@ const update = (req, path) => {
 //     </li>`)
 //   })
 // }
-
-const makeTweets = (tweets) => {
-  let tweetsLocal = JSON.parse(tweets).tweets
-  let local = tweetsLocal.map(tweet => {
-      return (`
- li
-  h3 ${tweet.tweet}
-  h4 user: ${tweet.user}
-  p id: ${tweet.id}\n`)
-    })
-    local = local.toString().replace(/,/g, "")
-    return `
-h1 Our Tweets
-ul
-${local}
-`
-}
-
 const homePage = (req, path) => {
   return readFile(path)
-  .then(makeTweets)
+  .then(tweets => JSON.parse(tweets))
   .then(tweets => {
-  //...use with html
-  // tweets = `<html><body>${tweets}</body></html>`
-  // tweets = tweets.replace(/,/g, "")
-
-  const pugTweets = pug.compile(tweets)
     return Object.assign({}, {
-    //body: tweets //...use with html
-    body: pugTweets()
-  }, {
-    header: {
-      code: 200,
-      type: 'text/html',
-      message: 'GET request',
-    }
+      body: pug.renderFile(TWEETS_TEMPLATE, tweets)
+    }, {
+      header: {
+        code: 200,
+        type: 'text/html',
+        message: 'GET request',
+      }
+    })
   })
-})
 }
 
 const requestHandle = (req) => {
   const { method, url, body } = req;
   const fileExists = fs.existsSync(TWEETS_PATH)
 
-  if(url === '/tweets') {
+  if((url === '/create' || url.split('?')[0] === '/create') && method === 'GET') {
+    let params = url.split('?')[1]
+        params = params.split('&')
+        params.map(param => {
+          let clean = param.split('=')
+          let obj = {}
+          obj[clean[0]] = clean[1]
+          return obj
+        })
+
+    return createTweet({
+      tweet: params.tweet,
+      user: params['user-name'],
+    }, TWEETS_PATH)
+      .then(() => {
+        return Object.assign({}, {
+          header: {
+            code: 302,
+            type: 'text/html',
+            message: 'Redirect',
+            redirect: '/'
+          }
+        })
+      })
+  } else if(url === '/tweets') {
     if (method === 'POST' && !fileExists)
       return create(req, TWEETS_PATH)
     else if (method === 'PUT' && fileExists)
@@ -157,9 +172,9 @@ const requestHandle = (req) => {
     else if (method === 'GET' && fileExists) {
       return readFile(TWEETS_PATH)
       .then(tweets => JSON.parse(tweets))
-      .then(response => {
+      .then(tweets => {
         return Object.assign({}, {
-          body: response
+          body: tweets
         }, {
           header: {
             code: 200,
@@ -188,12 +203,16 @@ server.on('request', (req, res) => {
   }
   return requestHandle(req)
     .then((response) => {
-      const { code, message, type } = response.header
+      const { code, message, type, redirect } = response.header
       res.writeHead(code, message, {
         'Content-Type': type
       })
-      if( type === 'text/html'){
+      if( type === 'text/html' && code === 200){
         res.write(response.body)
+      } else if ( code === 302){
+        res.writeHead(302, {
+          'Location': redirect
+        })
       } else {
         res.write(JSON.stringify(response.body))
       }
@@ -208,6 +227,6 @@ server.on('request', (req, res) => {
     })
 });
 
-server.listen(3001, () => {
+server.listen(3000, () => {
   console.log('server listening on port', server.address().port)
 })
