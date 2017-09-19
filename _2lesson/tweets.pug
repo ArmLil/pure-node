@@ -1,0 +1,22 @@
+html
+body
+  form#new-tweet(action='/create' method='GET')
+    fieldset
+      legend New Tweet
+      div
+        <br />
+        label(for='user') Username: &nbsp
+        input(name='user', type='text', placeholder='your username', required='', autofocus='')
+      div
+        <br />
+        label(for='tweet') tweet: &nbsp
+        input(name='tweet', type='text', required='', autofocus='')
+      div
+        <br /> &nbsp
+        input(name='create', type='submit', value='Create')
+  ul
+    each tweet in tweets
+      li
+        p #{tweet.user} <br /> #{tweet.tweet} <br /> #{tweet.id}
+    else
+      li There are no tweets
