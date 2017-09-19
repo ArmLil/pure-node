@@ -110,13 +110,28 @@ const createTweet = (tweet, path) => {
     })
 }
 
-const homePage = (req, path) => {
-  console.log('row 114 createHomePage')
+const deleteTweet = (id, path) => {
   return readFile(path)
-  .then(tweets => {console.log('homePage row 116 tweets', tweets)
-    return  JSON.parse(tweets)})
+    .then((data) => {
+      let tweetsArray = []
+      if(data) tweetsArray = JSON.parse(data).tweets
+      tweetsArray = tweetsArray.map(tweet => {
+        console.log(tweet.id,id, tweet.id === parseInt(id))
+        if(tweet.id === parseInt(id)) {
+          return null
+        }
+        return tweet
+      })
+      const newTweetsObject = {tweets: tweetsArray.filter(n => n)}
+      const result = JSON.stringify(newTweetsObject, null, '\t')
+      return writeFile(path, result)
+    })
+}
+
+const homePage = (req, path) => {
+  return readFile(path)
+  .then(tweets => JSON.parse(tweets))
   .then(tweets => {
-    console.log('row 119 after JSON.parse')
     return Promise.resolve(Object.assign({}, {
         body: pug.renderFile(TWEETS_TEMPLATE, tweets)
       }, {
@@ -161,7 +176,8 @@ const getQueryObj = (url)=> {
   let queryObj = {}
   params.map(param => {
     const clean = param.split('=')
-    obj = {[clean[0]] : clean[1]}
+    const value = clean[1].replace(/\+/g, ' ')
+    obj = {[clean[0]] : value}
     queryObj = Object.assign(queryObj, obj)
   })
   return queryObj
@@ -182,13 +198,31 @@ const createEndpointHandle = (req) => {
   })
 }
 
+const deleteEndpointHandle = (req) => {
+  let id = req.url.split('/')
+  id = id[id.length-1]
+  id = id.split('?')
+  id = id[0]
+  return deleteTweet(id, TWEETS_PATH)
+  .then(() => {
+    return Promise.resolve(Object.assign({}, {
+      header: {
+        code: 302,
+        type: 'text/html',
+        message: 'Redirect',
+        redirect: '/'
+      }
+    }))
+  })
+}
+
 const requestHandle = (req) => {
   const { method, url, body } = req;
   const fileExists = fs.existsSync(TWEETS_PATH)
-  console.log('row 188, request handle url', url)
   if((url === '/create' || url.split('?')[0] === '/create') && method === 'GET') {
-     console.log('create endpoint')
      return createEndpointHandle(req)
+  } else if(url.split('/')[1] === 'delete' && method === 'GET') {
+     return deleteEndpointHandle(req)
   } else if(url === '/tweets') {
      return Promise.resolve(tweetEndpointHandle(req))
   } else if (url === '/' && method === 'GET') {
@@ -199,7 +233,6 @@ const requestHandle = (req) => {
 const server = http.createServer()
 
 server.on('request', (req, res) => {
-  console.log('on request')
   if (req.url === '/favicon.ico') {
     res.writeHead(200, {'Content-Type': 'image/x-icon'} );
     fs.createReadStream(FAVICON).pipe(res);
@@ -212,17 +245,13 @@ server.on('request', (req, res) => {
       res.writeHead(code, message, {
         'Content-Type': type
       })
-      console.log('215 code === 200 header=',response.header)
       if( type === 'text/html' && code === 200) {
-        console.log('217 code === 200 header=',response.header)
         res.write(response.body)
       } else if (code === 302) {
-        console.log('220 (code === 302 header=',response.header)
         res.writeHead(302, {
           'Location': redirect
         })
       } else {
-        console.log('225 else heder=',response.header)
         res.write(JSON.stringify(response.body))
       }
       res.end()
@@ -235,6 +264,6 @@ server.on('request', (req, res) => {
     })
 });
 
-server.listen(3000, () => {
+server.listen(5000, () => {
   console.log('server listening on port', server.address().port)
 })

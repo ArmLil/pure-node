@@ -18,5 +18,7 @@ body
     each tweet in tweets
       li
         p #{tweet.user} <br /> #{tweet.tweet} <br /> #{tweet.id}
+        form.delete-tweet(action="/delete/"+tweet.id method='DELETE')
+        input(name='delete', type='submit', value="Delete Tweet")
     else
       li There are no tweets
