@@ -1,24 +1,24 @@
 html
 body
-  form#new-tweet(action='/create' method='GET')
+  form#new-tweet(action='/create' method='PT')
     fieldset
       legend New Tweet
       div
         <br />
-        label(for='user') Username: &nbsp
+        label(for='user') Username: &nbsp;
         input(name='user', type='text', placeholder='your username', required='', autofocus='')
       div
         <br />
-        label(for='tweet') tweet: &nbsp
+        label(for='tweet') tweet: &nbsp;
         input(name='tweet', type='text', required='', autofocus='')
       div
-        <br /> &nbsp
+        <br /> &nbsp;
         input(name='create', type='submit', value='Create')
   ul
     each tweet in tweets
       li
-        p #{tweet.user} <br /> #{tweet.tweet} <br /> #{tweet.id}
-        form.delete-tweet(action="/delete/"+tweet.id method='DELETE')
-        input(name='delete', type='submit', value="Delete Tweet")
+        form.delete-tweet(action='/delete/'+tweet.id method='DELETE')
+          p #{tweet.user} <br /> #{tweet.tweet} <br /> #{tweet.id}
+          input(name='delete', type='submit', value="Delete Tweet")
     else
       li There are no tweets

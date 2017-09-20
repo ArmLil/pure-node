@@ -32,6 +32,7 @@ const readFile = (path) => {
 }
 
 const writeFile = (path, data) => {
+  console.log('write file')
   return new Promise((resolve, reject) => {
     fs.writeFile(path, data, (err) => {
       if (err) return reject('writeFile error', err)
@@ -49,7 +50,7 @@ const appendFile = (path, body) => {
   })
 }
 
-const create = (req, path) => {
+const createFile = (req, path) => {
   return readBody(req)
   .then((body) => appendFile(path, body))
   .then(response => {
@@ -102,7 +103,8 @@ const createTweet = (tweet, path) => {
     .then((data) => {
       let tweetsArray = []
       if(data) tweetsArray = JSON.parse(data).tweets
-      tweet.id = tweetsArray.length
+      const id = new Date().valueOf();
+      tweet.id = id;
       const newTweetsArray = tweetsArray.concat(tweet)
       const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
       const result = JSON.stringify(newTweetsObject, null, '\t')
@@ -111,6 +113,7 @@ const createTweet = (tweet, path) => {
 }
 
 const deleteTweet = (id, path) => {
+  console.log('deleteTweet')
   return readFile(path)
     .then((data) => {
       let tweetsArray = []
@@ -129,6 +132,7 @@ const deleteTweet = (id, path) => {
 }
 
 const homePage = (req, path) => {
+  console.log('homepage')
   return readFile(path)
   .then(tweets => JSON.parse(tweets))
   .then(tweets => {
@@ -148,7 +152,7 @@ const tweetEndpointHandle = (req) => {
   const fileExists = fs.existsSync(TWEETS_PATH)
   const { method } = req
   if (method === 'POST' && !fileExists)
-    return create(req, TWEETS_PATH)
+    return createFile(req, TWEETS_PATH)
   else if (method === 'PUT' && fileExists)
     return update(req, TWEETS_PATH)
   else if (method === 'GET' && fileExists) {
@@ -184,6 +188,7 @@ const getQueryObj = (url)=> {
 }
 
 const createEndpointHandle = (req) => {
+  console.log('createEndpointHandle')
   return Promise.resolve(getQueryObj(req.url))
   .then((tweetObj) => createTweet(tweetObj, TWEETS_PATH))
   .then(() => {
@@ -199,6 +204,7 @@ const createEndpointHandle = (req) => {
 }
 
 const deleteEndpointHandle = (req) => {
+  console.log('deleteEndpointHandle')
   let id = req.url.split('/')
   id = id[id.length-1]
   id = id.split('?')
@@ -217,6 +223,7 @@ const deleteEndpointHandle = (req) => {
 }
 
 const requestHandle = (req) => {
+  console.log('requestHandle =', req.method)
   const { method, url, body } = req;
   const fileExists = fs.existsSync(TWEETS_PATH)
   if((url === '/create' || url.split('?')[0] === '/create') && method === 'GET') {
@@ -233,6 +240,7 @@ const requestHandle = (req) => {
 const server = http.createServer()
 
 server.on('request', (req, res) => {
+  console.log('on request')
   if (req.url === '/favicon.ico') {
     res.writeHead(200, {'Content-Type': 'image/x-icon'} );
     fs.createReadStream(FAVICON).pipe(res);
