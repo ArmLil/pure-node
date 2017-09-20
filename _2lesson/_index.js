@@ -32,7 +32,6 @@ const readFile = (path) => {
 }
 
 const writeFile = (path, data) => {
-  console.log('write file')
   return new Promise((resolve, reject) => {
     fs.writeFile(path, data, (err) => {
       if (err) return reject('writeFile error', err)
@@ -173,9 +172,10 @@ const getQueryObj = (url) => {
     obj = {[clean[0]] : value}
     queryObj = Object.assign(queryObj, obj)
     for(var key in queryObj) {
-      if(!queryObj[key]) {
+      if(!queryObj[key]
+        || (queryObj[key]==="Update")
+        || (queryObj[key]==="Create"))
         delete queryObj[key];
-      }
     }
   })
   return queryObj
@@ -215,8 +215,8 @@ const tweetEndpointHandle = (req) => {
 }
 
 const createEndpointHandle = (req) => {
-  return Promise.resolve(getQueryObj(req.url))
-  .then((tweetObj) => createTweet(tweetObj, TWEETS_PATH))
+  let tweetObj = getQueryObj(req.url)
+  return createTweet(tweetObj, TWEETS_PATH)
   .then(() => {
     return Promise.resolve(Object.assign({}, {
       header: {
@@ -245,12 +245,10 @@ const deleteEndpointHandle = (req) => {
 }
 
 const updateEndpointHandle = (req) => {
-  return Promise.resolve(getQueryObj(req.url))
-  .then((tweetObj) => {
-    const id = getQueryId(req.url)
-    tweetObj = Object.assign({}, tweetObj, {id})
-    updateTweet(tweetObj, TWEETS_PATH)
-  })
+  const id = getQueryId(req.url)
+  let tweetObj = getQueryObj(req.url)
+  tweetObj = Object.assign({}, tweetObj, {id})
+  return updateTweet(tweetObj, TWEETS_PATH)
   .then(() => {
     return Promise.resolve(Object.assign({}, {
       header: {
@@ -267,13 +265,13 @@ const requestHandle = (req) => {
   const { method, url, body } = req;
   const fileExists = fs.existsSync(TWEETS_PATH)
   if((url === '/create' || url.split('?')[0] === '/create') && method === 'GET') {
-     return createEndpointHandle(req)
+    return createEndpointHandle(req)
   } else if(url.split('/')[1] === 'delete' && method === 'GET') {
-     return deleteEndpointHandle(req)
+    return deleteEndpointHandle(req)
   } else if((url.split('/')[1] === 'update') && method === 'GET') {
-     return updateEndpointHandle(req)
+    return updateEndpointHandle(req)
   } else if(url === '/tweets') {
-     return Promise.resolve(tweetEndpointHandle(req))
+    return tweetEndpointHandle(req)
   } else if (url === '/' && method === 'GET') {
     return homePage(req, TWEETS_PATH)
   } else return Promise.reject('Bad Request')
@@ -282,7 +280,6 @@ const requestHandle = (req) => {
 const server = http.createServer()
 
 server.on('request', (req, res) => {
-  console.log('on request')
   if (req.url === '/favicon.ico') {
     res.writeHead(200, {'Content-Type': 'image/x-icon'} );
     fs.createReadStream(FAVICON).pipe(res);
@@ -290,28 +287,28 @@ server.on('request', (req, res) => {
     return;
   }
   return requestHandle(req)
-    .then((response) => {
-      const { code, message, type, redirect } = response.header
-      res.writeHead(code, message, {
-        'Content-Type': type
+  .then((response) => {
+    const { code, message, type, redirect } = response.header
+    res.writeHead(code, message, {
+      'Content-Type': type
+    })
+    if( type === 'text/html' && code === 200) {
+      res.write(response.body)
+    } else if (code === 302) {
+      res.writeHead(302, {
+        'Location': redirect
       })
-      if( type === 'text/html' && code === 200) {
-        res.write(response.body)
-      } else if (code === 302) {
-        res.writeHead(302, {
-          'Location': redirect
-        })
-      } else {
-        res.write(JSON.stringify(response.body))
-      }
-      res.end()
-    })
-    .catch(error => {
-      console.error('Opps', error)
-      res.statusCode = 400
-      res.statusMessage = error
-      res.end(error)
-    })
+    } else {
+      res.write(JSON.stringify(response.body))
+    }
+    res.end()
+  })
+  .catch(error => {
+    console.error('Opps', error)
+    res.statusCode = 400
+    res.statusMessage = error
+    res.end(error)
+  })
 });
 
 server.listen(5000, () => {

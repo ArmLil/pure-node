@@ -18,10 +18,10 @@ body
     each tweet in tweets
       li
         form#update-tweet(action='/update/'+tweet.id method='PUT')
-          label(for='user') Username: &nbsp #{tweet.user} &nbsp;
+          label(for='user' style={color: tweet.color}) Username: &nbsp #{tweet.user} &nbsp;
           input(name='user', type='text', placeholder=' update username', autofocus='')
           <br /><br />
-          label(for='tweet') tweet: #{tweet.tweet} &nbsp;
+          label(for='tweet' style={color: tweet.color}) tweet: #{tweet.tweet} &nbsp;
           input(name='tweet', type='text', placeholder=' update tweet', autofocus='')
           <br /><br />
           input(name='update', type='submit', value="Update")
