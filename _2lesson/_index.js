@@ -68,7 +68,7 @@ const createFile = (req, path) => {
   })
 }
 
-const update = (req, path) => {
+const updateFile = (req, path) => {
   let localBody
   return readBody(req)
   .then((body) => localBody = body)
@@ -103,8 +103,9 @@ const createTweet = (tweet, path) => {
     .then((data) => {
       let tweetsArray = []
       if(data) tweetsArray = JSON.parse(data).tweets
-      const id = new Date().valueOf();
+      const id = `${new Date().valueOf()}`;
       tweet.id = id;
+      tweet.color = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
       const newTweetsArray = tweetsArray.concat(tweet)
       const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
       const result = JSON.stringify(newTweetsObject, null, '\t')
@@ -112,15 +113,29 @@ const createTweet = (tweet, path) => {
     })
 }
 
+const updateTweet = (newTweet, path) => {
+  return readFile(path)
+    .then((data) => {
+      let tweetsArray = JSON.parse(data).tweets
+      let newTweetsArray = tweetsArray.map(oldTweet => {
+        if(newTweet.id === oldTweet.id) {
+          return oldTweet = Object.assign({}, oldTweet, newTweet)
+        }
+        return oldTweet
+      })
+      const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
+      const result = JSON.stringify(newTweetsObject, null, '\t')
+      return writeFile(path, result)
+    })
+}
+
 const deleteTweet = (id, path) => {
-  console.log('deleteTweet')
   return readFile(path)
     .then((data) => {
       let tweetsArray = []
       if(data) tweetsArray = JSON.parse(data).tweets
       tweetsArray = tweetsArray.map(tweet => {
-        console.log(tweet.id,id, tweet.id === parseInt(id))
-        if(tweet.id === parseInt(id)) {
+        if(tweet.id === id) {
           return null
         }
         return tweet
@@ -132,7 +147,6 @@ const deleteTweet = (id, path) => {
 }
 
 const homePage = (req, path) => {
-  console.log('homepage')
   return readFile(path)
   .then(tweets => JSON.parse(tweets))
   .then(tweets => {
@@ -148,32 +162,7 @@ const homePage = (req, path) => {
   })
 }
 
-const tweetEndpointHandle = (req) => {
-  const fileExists = fs.existsSync(TWEETS_PATH)
-  const { method } = req
-  if (method === 'POST' && !fileExists)
-    return createFile(req, TWEETS_PATH)
-  else if (method === 'PUT' && fileExists)
-    return update(req, TWEETS_PATH)
-  else if (method === 'GET' && fileExists) {
-    return readFile(TWEETS_PATH)
-    .then(tweets => JSON.parse(tweets))
-    .then(tweets => {
-      return Object.assign({}, {
-        body: tweets
-      }, {
-        header: {
-          code: 200,
-          type: 'application/json',
-          message: 'GET request',
-        }
-      })
-    })
-  }
-  else return Promise.reject('Bad Request')
-}
-
-const getQueryObj = (url)=> {
+const getQueryObj = (url) => {
   let params = url.split('?')[1]
   params = params.split('&')
   let obj = {}
@@ -183,12 +172,49 @@ const getQueryObj = (url)=> {
     const value = clean[1].replace(/\+/g, ' ')
     obj = {[clean[0]] : value}
     queryObj = Object.assign(queryObj, obj)
+    for(var key in queryObj) {
+      if(!queryObj[key]) {
+        delete queryObj[key];
+      }
+    }
   })
   return queryObj
 }
 
+const getQueryId = (url) => {
+  let id = url.split('/')
+  id = id[id.length-1]
+  id = id.split('?')
+  id = id[0]
+  return id
+}
+
+const tweetEndpointHandle = (req) => {
+  const fileExists = fs.existsSync(TWEETS_PATH)
+  const { method } = req
+  if (method === 'POST' && !fileExists)
+    return createFile(req, TWEETS_PATH)
+  else if (method === 'PUT' && fileExists)
+    return updateFile(req, TWEETS_PATH)
+  else if (method === 'GET' && fileExists) {
+    return readFile(TWEETS_PATH)
+    .then(tweets => JSON.parse(tweets))
+    .then(tweets => {
+      return Promise.resolve(Object.assign({}, {
+        body: tweets
+      }, {
+        header: {
+          code: 200,
+          type: 'application/json',
+          message: 'GET request',
+        }
+      }))
+    })
+  }
+  else return Promise.reject('Bad Request')
+}
+
 const createEndpointHandle = (req) => {
-  console.log('createEndpointHandle')
   return Promise.resolve(getQueryObj(req.url))
   .then((tweetObj) => createTweet(tweetObj, TWEETS_PATH))
   .then(() => {
@@ -204,11 +230,7 @@ const createEndpointHandle = (req) => {
 }
 
 const deleteEndpointHandle = (req) => {
-  console.log('deleteEndpointHandle')
-  let id = req.url.split('/')
-  id = id[id.length-1]
-  id = id.split('?')
-  id = id[0]
+  let id = getQueryId(req.url)
   return deleteTweet(id, TWEETS_PATH)
   .then(() => {
     return Promise.resolve(Object.assign({}, {
@@ -222,14 +244,34 @@ const deleteEndpointHandle = (req) => {
   })
 }
 
+const updateEndpointHandle = (req) => {
+  return Promise.resolve(getQueryObj(req.url))
+  .then((tweetObj) => {
+    const id = getQueryId(req.url)
+    tweetObj = Object.assign({}, tweetObj, {id})
+    updateTweet(tweetObj, TWEETS_PATH)
+  })
+  .then(() => {
+    return Promise.resolve(Object.assign({}, {
+      header: {
+        code: 302,
+        type: 'text/html',
+        message: 'Redirect',
+        redirect: '/'
+      }
+    }))
+  })
+}
+
 const requestHandle = (req) => {
-  console.log('requestHandle =', req.method)
   const { method, url, body } = req;
   const fileExists = fs.existsSync(TWEETS_PATH)
   if((url === '/create' || url.split('?')[0] === '/create') && method === 'GET') {
      return createEndpointHandle(req)
   } else if(url.split('/')[1] === 'delete' && method === 'GET') {
      return deleteEndpointHandle(req)
+  } else if((url.split('/')[1] === 'update') && method === 'GET') {
+     return updateEndpointHandle(req)
   } else if(url === '/tweets') {
      return Promise.resolve(tweetEndpointHandle(req))
   } else if (url === '/' && method === 'GET') {
