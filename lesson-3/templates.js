@@ -1,9 +1,11 @@
 const pug = require('pug')
-const Database = require('./database')
 const fs = require ('fs')
 
 const Templates = {}
 module.exports = Templates
+
+const Database = require('./database')
+const Utils = require('./utils')
 
 const TWEETS_TEMPLATE = './public/tweets.pug'
 const TWEETS_PATH = './tweets.json'
@@ -20,7 +22,16 @@ const responseObj = (tweets, message) => {
   }))
 }
 
-Templates.homePage = (req) => {
+
+Templates.homePage = (req, dataFromFile) => {
+  let tweetsArray = []
+  if(dataFromFile) tweetsArray = JSON.parse(dataFromFile).tweets
+
+  const id = Utils.getQueryId(req.url)
+  if(id) {
+   let tweet = Utils.findTweetById(id, tweetsArray)
+   return responseObj({tweets:[tweet]}, 'GET request')
+ }
   const fileExists = fs.existsSync(TWEETS_PATH)
   if(!fileExists) {
     return responseObj({'tweets': []},'Database does not exist...')

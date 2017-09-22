@@ -21,7 +21,8 @@ Handlers.favicon = (req, res) => {
 }
 
 Handlers.homePage = (req, res) => {
-  return Templates.homePage(req,res)
+  return Database.tweets()
+  .then((data) => Templates.homePage(req,data))
 }
 
 Handlers.tweetsGetHandle = (req) => {
@@ -79,14 +80,14 @@ Handlers.requestCheckEndpoint = (req, res) => {
   const { url, method } = req
   const query = url.split('?')[1]
   const param = req.url.split('?')[0]
-  console.log('param', param)
+  console.log('param', param, 'url',url, url.split(''))
   if (!fileExists && url !== '/' && method !== 'POST') {
     return Utils.dbNotExistResponse()
-  } else if (url === '/' && method === 'GET') {
-    return Handlers.homePage(req,res)
-  } else if (url === '/tweets'
-  || (url.split('/')[1] === 'tweets')) {
+  } else if (url === '/api/tweets'
+  || (url.split('/')[2] === 'tweets')) {
     return Handlers.tweetsEndpointHandle(req, res)
-  }
+  } else if (url === '/' || url.split('')[0] === '/') {
+    return Handlers.homePage(req,res)
+  } 
    else return Promise.reject('Not Found')
 }

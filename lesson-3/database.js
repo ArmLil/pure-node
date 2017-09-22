@@ -46,7 +46,6 @@ Database.addTweets = (reqBody) => {
 }
 
 Database.updateTweet = (newTweet, method) => {
-  console.log('newTweet', newTweet)
   let findTweetById = false
   return Database.tweets(TWEETS_PATH)
   .then((data) => {

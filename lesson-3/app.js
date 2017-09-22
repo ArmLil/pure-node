@@ -13,9 +13,7 @@ server.on('request', (req, res) => {
   }
   return Handlers.requestCheckEndpoint(req,res)
   .then(response => {
-    console.log('response')
       const { code, message, type, redirect } = response.header
-      console.log(response.header, response.body)
       res.writeHead(code, message, {
         'Content-Type': type
       })

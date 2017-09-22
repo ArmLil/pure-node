@@ -23,7 +23,6 @@ Utils.getQueryId = (url) => {
   id = id[id.length-1]
   id = id.split('?')
   id = id[0]
-  console.log('get id ',id)
   if(!parseInt(id)) return null
   return id
 }
