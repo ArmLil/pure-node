@@ -7,15 +7,6 @@ const Utils = require('./utils')
 const TWEETS_PATH = './tweets.json'
 const Messages = require('./messages')
 
-Database.tweets = () => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(TWEETS_PATH, 'utf8', (err, data) => {
-      if (err) return reject(Messages.readFile.error, err)
-      resolve(data)
-    });
-  });
-}
-
 Database.appendFile = (body,message) => {
   return new Promise((resolve, reject) => {
     fs.appendFile(TWEETS_PATH, body, (err) => {
@@ -23,6 +14,15 @@ Database.appendFile = (body,message) => {
     })
     return resolve(message.success)
   })
+}
+
+Database.updateFile = (req) => {
+  const { url, method } = req
+  const id = Utils.getQueryId(url)
+  const queryObj = Utils.getQueryObj(url)
+  if(!id) return Promise.reject(Messages.id.error)
+  const tweetObj = Object.assign({}, queryObj, {id})
+  return Database.updateTweet(tweetObj, method)
 }
 
 Database.writeFile = (data, message) => {
@@ -37,6 +37,15 @@ Database.writeFile = (data, message) => {
 Database.createFile = (reqBody) => {
   return Utils.processTweetsObjects(null,reqBody)
   .then((result) => Database.appendFile(result, Messages.dataPostCreate))
+}
+
+Database.tweets = () => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(TWEETS_PATH, 'utf8', (err, data) => {
+      if (err) return reject(Messages.readFile.error, err)
+      resolve(data)
+    });
+  });
 }
 
 Database.addTweets = (reqBody) => {
@@ -68,13 +77,4 @@ Database.updateTweet = (newTweet, method) => {
     else if (method === 'DELETE')
       return Database.writeFile(result, Messages.dataDelete)
   })
-}
-
-Database.updateFile = (req) => {
-  const { url, method } = req
-  const id = Utils.getQueryId(url)
-  const queryObj = Utils.getQueryObj(url)
-  if(!id) return Promise.reject(Messages.id.error)
-  const tweetObj = Object.assign({}, queryObj, {id})
-  return Database.updateTweet(tweetObj, method)
 }

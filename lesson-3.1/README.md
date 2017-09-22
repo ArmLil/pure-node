@@ -2,7 +2,7 @@ endpoints
 
 ***WEB*** respond in html
 
-/ > render all templates
+- [x] / > render all template
 
 /{id} > render single template by id
 
@@ -14,14 +14,12 @@ use the API for these functions
 
 ***API*** respond in JSON
 
-/api/tweets GET
+- [x] /api/tweets GET
 
-/api/tweets POST
+- [x] /api/tweets POST
 
-/api/tweets/{id} PUT
+- [ ] /api/tweets/{id} PUT
 
-/api/tweets/{id} DELETE
+- [ ] /api/tweets/{id} DELETE
 
-/api/tweets{id} GET > single tweet
-
-
+- [x] /api/tweets{id} GET > single tweet
