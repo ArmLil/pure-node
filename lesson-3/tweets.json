@@ -1,0 +1,22 @@
+{
+	"tweets": [
+		{
+			"user": "Masha1",
+			"tweet": "super",
+			"id": "15059262686603",
+			"color": "rgb(34, 0, 54)"
+		},
+		{
+			"user": "Ashot1",
+			"tweet": "Freedom",
+			"id": "15059265120364",
+			"color": "rgb(64, 0, 127)"
+		},
+		{
+			"user": "Jane1",
+			"tweet": "wow",
+			"id": "15059268834735",
+			"color": "rgb(245, 0, 90)"
+		}
+	]
+}
