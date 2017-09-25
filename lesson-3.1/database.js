@@ -1,31 +1,14 @@
+'use strict'
 const fs = require ('fs')
+const Utils = require('./utils')
+
+const TWEETS_PATH = './tweets.json'
+const Messages = require('./messages')
 
 const Database = {}
 module.exports = Database
 
-const Utils = require('./utils')
-const TWEETS_PATH = './tweets.json'
-const Messages = require('./messages')
-
-Database.appendFile = (body,message) => {
-  return new Promise((resolve, reject) => {
-    fs.appendFile(TWEETS_PATH, body, (err) => {
-      if (err) return reject(message.error,err)
-    })
-    return resolve(message.success)
-  })
-}
-
-Database.updateFile = (req) => {
-  const { url, method } = req
-  const id = Utils.getQueryId(url)
-  const queryObj = Utils.getQueryObj(url)
-  if(!id) return Promise.reject(Messages.id.error)
-  const tweetObj = Object.assign({}, queryObj, {id})
-  return Database.updateTweet(tweetObj, method)
-}
-
-Database.writeFile = (data, message) => {
+const writeFile = (data, message) => {
   return new Promise((resolve, reject) => {
     fs.writeFile(TWEETS_PATH, data, (err) => {
       if (err) return reject(message.error, err)
@@ -34,47 +17,70 @@ Database.writeFile = (data, message) => {
   })
 }
 
-Database.createFile = (reqBody) => {
-  return Utils.processTweetsObjects(null,reqBody)
-  .then((result) => Database.appendFile(result, Messages.dataPostCreate))
-}
-
 Database.tweets = () => {
   return new Promise((resolve, reject) => {
     fs.readFile(TWEETS_PATH, 'utf8', (err, data) => {
       if (err) return reject(Messages.readFile.error, err)
       resolve(data)
-    });
-  });
+    })
+  })
+}
+
+Database.tweetsArray = () => {
+  return Database.tweets()
+  .then((dataFromDb) => {
+    let tweets = []
+    if(dataFromDb) tweets = JSON.parse(dataFromDb).tweets
+    return tweets
+  })
 }
 
 Database.addTweets = (reqBody) => {
-  return Database.tweets()
-  .then((dataFromFile) => Utils.processTweetsObjects(dataFromFile,reqBody))
-  .then((result) => Database.writeFile(result, Messages.dataPostAdd))
+  return Database.tweetsArray()
+  .then((tweetsArray) => Utils.joinTweets(tweetsArray,reqBody.tweets))
+  .then((result) => {
+    let { notValidTweets, newTweetsObject } = result
+    let { message } = Messages.dataPostAdd
+    if(notValidTweets) {
+      notValidTweets = JSON.stringify(notValidTweets, null, '\t')
+      message = Messages.notValidTweets
+      message.success += notValidTweets
+    }
+    newTweetsObject = JSON.stringify(newTweetsObject, null, '\t')
+    return writeFile(newTweetsObject, message)
+  })
 }
 
-Database.updateTweet = (newTweet, method) => {
-  let findTweetById = false
-  return Database.tweets(TWEETS_PATH)
-  .then((data) => {
-    let tweetsArray = JSON.parse(data).tweets
-    let newTweetsArray = tweetsArray.map(oldTweet => {
-      if (newTweet.id === oldTweet.id) {
-        findTweetById = true
-        if(method === 'PUT')
-          return oldTweet = Object.assign({}, oldTweet, newTweet)
-        else if (method === 'DELETE')
-          return null
-      }
-      return oldTweet
-    })
+Database.updateTweets = (newTweet) => {
+  return Database.tweetsArray()
+  .then((tweetsArray) => {
+    if(!Utils.findTweetById(newTweet.id, tweetsArray))
+      return Promise.reject(Messages.id.error)
+    let newTweetsArray = Utils.updateTweet(newTweet, tweetsArray)
+    const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
+    console.log('newTweetsObject', newTweetsObject)
+    const result = JSON.stringify(newTweetsObject, null, '\t')
+    return writeFile(result, Messages.dataUpdate)
+  })
+}
+
+Database.deleteTweet = (id) => {
+  return Database.tweetsArray()
+  .then((tweetsArray) => {
+    if(!Utils.findTweetById(id, tweetsArray))
+      return Promise.reject(Messages.id.error)
+    let newTweetsArray = Utils.deleteTweetById(id, tweetsArray)
     const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
     const result = JSON.stringify(newTweetsObject, null, '\t')
-    if(!findTweetById) return Promise.reject(Messages.tweet.error)
-    if (method === 'PUT')
-      return Database.writeFile(result, Messages.dataUpdate)
-    else if (method === 'DELETE')
-      return Database.writeFile(result, Messages.dataDelete)
+    return writeFile(result, Messages.dataDelete)
+  })
+}
+
+Database.getTweetById = (id) => {
+  return Database.tweetsArray()
+  .then((tweetsArray) => {
+    const tweet = Utils.findTweetById(id, tweetsArray)
+    if(!tweet) return Promise.reject(Messages.tweet.error)
+    return {tweets: [tweet]}
   })
 }

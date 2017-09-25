@@ -1,6 +1,7 @@
+'use strict'
+
 const Utils = {}
 module.exports = Utils
-
 
 Utils.getQueryObj = (url) => {
   let params = url.split('?')[1]
@@ -18,15 +19,6 @@ Utils.getQueryObj = (url) => {
   return queryObj
 }
 
-Utils.getQueryId = (url) => {
-  let id = url.split('/')
-  id = id[id.length-1]
-  id = id.split('?')
-  id = id[0]
-  if(!parseInt(id)) return null
-  return id
-}
-
 Utils.getBodyObj = (req) => {
   let body = []
   return new Promise((resolve, reject) => {
@@ -39,6 +31,83 @@ Utils.getBodyObj = (req) => {
     })
     req.on('error', (e) => { return reject(e.message) })
   })
+}
+
+Utils.findTweetById = (id, tweetsArray) => {
+  let result = null
+  tweetsArray.map(oldTweet => {
+    if(id === oldTweet.id) {
+       result = oldTweet
+    }
+  })
+ return result
+}
+
+Utils.deleteTweetById = (id, tweetsArray) => {
+  tweetsArray = tweetsArray.map(oldTweet => {
+    if(id === oldTweet.id) {
+      return null
+    }
+    return oldTweet
+  })
+ return tweetsArray
+}
+
+Utils.updateTweet = (newTweet, tweetsArray) => {
+  tweetsArray = tweetsArray.map(oldTweet => {
+    if(newTweet.id === oldTweet.id) {
+      return Object.assign({}, oldTweet, newTweet)
+    }
+    return oldTweet
+  })
+ return tweetsArray
+}
+
+Utils.filterInt = (value) => {
+  if (/^(\-|\+)?([0-9]+|Infinity)$/.test(value))
+    return Number(value);
+  return NaN;
+}
+
+Utils.processTweet = (tweet) => {
+  const id = `${new Date().valueOf()}`
+  tweet.id = id
+  tweet.color = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
+  const newTweetsObject = {tweets: [tweet]}
+  return Promise.resolve(newTweetsObject)
+}
+
+const IsUnicId = (id, tweets) => {
+  let idIsUnic = true
+  tweets.map(tweet => {
+    if(tweet.id == id) {
+      idIsUnic = false
+      return
+    }
+  })
+  return idIsUnic
+}
+
+const checkTweetsId = (tweetsFromDb, newTweets) => {
+  const notValidTweets = []
+  const validTweets = newTweets.map(tweet => {
+    const isUnic = IsUnicId(tweet.id, tweetsFromDb)
+    if(!isUnic) {
+      notValidTweets.push(tweet)
+      return null
+    } else if (isUnic){
+      return tweet
+    }
+  })
+  return { notValidTweets, validTweets }
+}
+
+Utils.joinTweets = (tweetsFromDb, bodyArray) => {
+  const checkedTweets = checkTweetsId(tweetsFromDb, bodyArray)
+  let { notValidTweets, validTweets } = checkedTweets
+  let newTweetsArray = tweetsFromDb.concat(validTweets)
+  const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
+  return Promise.resolve({ notValidTweets, newTweetsObject})
 }
 
 Utils.dbNotExistResponse = () => {
@@ -77,22 +146,13 @@ Utils.successTextResponse = (message) => {
   }))
 }
 
-Utils.findTweetById = (id, tweetsArray) => {
-  let result = null
-  tweetsArray.map(oldTweet => {
-    if (id === oldTweet.id) {
-       result = oldTweet
+Utils.redirectResponse = () => {
+  return Promise.resolve(Object.assign({}, {
+    header: {
+      code: 302,
+      type: 'text/html',
+      message: 'Redirect',
+      redirect: '/'
     }
-  })
- return result
-}
-
-Utils.processTweetsObjects = (dataFromFile, reqBody) => {
-  let tweetsArray = []
-  if(dataFromFile) tweetsArray = JSON.parse(dataFromFile).tweets
-  const bodyArray = reqBody.tweets
-  const newTweetsArray = tweetsArray.concat(bodyArray)
-  const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
-  const result = JSON.stringify(newTweetsObject, null, '\t')
-  return Promise.resolve(result)
+  }))
 }

@@ -1,7 +1,5 @@
 'use strict'
 const http = require('http')
-
-const Utils = require('./utils')
 const Handlers = require('./handlers')
 
 const server = http.createServer()
@@ -9,26 +7,26 @@ const server = http.createServer()
 server.on('request', (req, res) => {
   console.log('on server....req=', req.url)
   if(req.url === '/favicon.ico') {
-    return Handlers.favicon(req, res)
+    return Handlers.favicon(res)
   }
   return Handlers.requestCheckEndpoint(req,res)
   .then(response => {
-      const { code, message, type, redirect } = response.header
-      res.writeHead(code, message, {
-        'Content-Type': type
+    const { code, message, type, redirect } = response.header
+
+    res.writeHead(code, {'Content-Type': type})
+
+    if(type === 'application/json') {
+      res.write(JSON.stringify(response.body, null, '\t'))
+    } else if (type === 'text/html' && code === 200) {
+      res.write(response.body)
+    } else if (type === 'text/plain') {
+      res.write(message)
+    } else if (code === 302) {
+      res.writeHead(302, {
+        'Location': redirect
       })
-      if (type === 'application/json'){
-        res.write(JSON.stringify(response.body))
-      } else if (type === 'text/html') {
-        res.write(response.body)
-      } else if (type === 'text/plain') {
-        res.write(message)
-      } else if (code === 302) {
-        res.writeHead(302, {
-          'Location': redirect
-        })
-      }
-      res.end()
+    }
+    res.end()
   })
   .catch(error => {
     console.error('Opps', error)

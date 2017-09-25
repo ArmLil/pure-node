@@ -1,112 +1,127 @@
-const pathModule = require('path')
+'use strict'
 const fs = require ('fs')
 const Templates = require('./templates')
 const Database = require('./database')
 const Utils = require('./utils')
 
-const FAVICON = pathModule.join(__dirname, 'public', 'favicon.ico');
+const FAVICON = './public/tweets.pug'
 const TWEETS_PATH = './tweets.json'
-
-const fileExists = fs.existsSync(TWEETS_PATH)
 
 const Handlers = {}
 module.exports = Handlers
 
-Handlers.favicon = (req, res) => {
+const fileExists = fs.existsSync(TWEETS_PATH)
+
+Handlers.favicon = (res) => {
   res.writeHead(200, {'Content-Type': 'image/x-icon'} );
   fs.createReadStream(FAVICON).pipe(res);
   res.end();
   return
 }
 
-const homePage = (req, res) => {
-  return Database.tweets()
-  .then((data) => Templates.homePage(req,data))
-}
-
-const tweetsGet = (req, id) => {
-  if(id) {
-    return Database.tweets()
-    .then((data) => {
-      let tweetsArray = JSON.parse(data).tweets
-      return Utils.findTweetById(id, tweetsArray)
-    })
-    .then(tweet => Utils.successGetResponse(tweet))
-  } else {
-    return Database.tweets()
-    .then(tweets => Promise.resolve(JSON.parse(tweets)))
-    .then(tweets => Utils.successGetResponse(tweets))
-  }
-}
-
-const tweetsPost = (req) => {
-  return Utils.getBodyObj(req)
-  .then((body) => {
-    if(!fileExists)
-      return Database.createFile(body)
-    else
-      return Database.addTweets(body)
-  })
-  .then((message) => Utils.successTextResponse(message))
-}
-
-Handlers.tweetsPutHandle = (req) => {
-  return Database.updateFile(req)
- .then((message) => Utils.successTextResponse(message))
-}
-
-Handlers.tweetsDeleteHandle = (req) => {
-  return Database.updateFile(req)
- .then((message) => Utils.successTextResponse(message))
-}
-
-
-Handlers.apiEndpointHandle = (req, res) => {
+const apiEndpointHandle = (req) => {
   const {url, method } = req
+  if(!fileExists) return Utils.dbNotExistResponse()
 
-  // remove from the url the begening of the url for cleaner us
   const endpoint = url.replace('/api/','')
   const endpointParts = endpoint.split('/')
 
+  let idString = ''
+  if(endpointParts[1]) {
+    if(endpointParts[1].includes('?')) {
+      idString = endpointParts[1].split('?')[0]
+    }
+    else idString = endpointParts[1]
+  }
+  console.log('idString', idString)
+  const idNumber = Utils.filterInt(idString)
+
   if(endpointParts[0] === 'tweets'){
     if(endpointParts.length === 1){
-      if (method === 'POST') return tweetsPost(req)
-      else if (method === 'GET') return tweetsGet(req)
+      if (method === 'POST') {
+        return Utils.getBodyObj(req)
+        .then((body) => Database.addTweets(body))
+        .then((message) => Utils.successTextResponse(message))
+      }
+      else if (method === 'GET') {
+        return Database.tweets()
+        .then(tweets => Promise.resolve(JSON.parse(tweets)))
+        .then(tweets => Utils.successGetResponse(tweets))
+      }
     }
-    else {
-      if (endpointParts.length === 2 && parseInt(endpointParts[1])){
-        if (method === 'GET') return tweetsGet(req, endpointParts[1])
+    else if (endpointParts.length === 2 && idNumber) {
+      const queryObj = Utils.getQueryObj(url)
+      if (method === 'GET') {
+        return Database.getTweetById(idString)
+        .then(tweet => Utils.successGetResponse(tweet))
+      }
+      else if (method === 'PUT') {
+        const tweetObj = Object.assign({}, queryObj, {id:idString})
+        if (queryObj) {
+          return Database.updateTweets(tweetObj)
+          .then((message) => Utils.successTextResponse(message))
+        }
+      }
+      else if (method === 'DELETE' && !queryObj) {
+        return Database.deleteTweet(idString)
+        .then((message) => Utils.successTextResponse(message))
       }
     }
   }
-
   return Promise.reject('Bad Request')
-
-  // if (method === 'POST')
-  // else if (method === 'PUT')
-  //   return Handlers.tweetsPutHandle(req)
-  // else if (method === 'GET')
-  //   return Handlers.tweetsGetHandle(req)
-  // else if (method === 'DELETE')
-  //     return Handlers.tweetsDeleteHandle(req)
-
 }
 
-Handlers.endpointHandle = (req, res) => {
+const rootEndpointHandle = (req) => {
+  if(!fileExists) return Utils.dbNotExistResponse()
+
   const {url, method } = req
-  if (method === 'GET'){
-    if(url === '/') return homePage(req,res)
-  } else return Promise.reject('Bad Request')
+  const endpointParts = url.split('/')
+
+  if (!endpointParts.length === 2) Promise.reject('Bad Request')
+
+  const idString = endpointParts[1].split('?')[0]
+  const idNumber = Utils.filterInt(idString)
+  const queryObj = Utils.getQueryObj(url)
+
+  if(url === '/') {
+    return Database.tweets()
+    .then(tweets => {
+      if(!tweets) tweets = {tweets:[]}
+      tweets = JSON.parse(tweets)
+      return Templates.renderHomePage(tweets, 'Get HomePage')
+    })
+  }
+  else if(url.split('?')[0] === '/create' && queryObj) {
+    if (method === 'GET') {
+      return Utils.processTweet(queryObj)
+      .then(tweet => Database.addTweets(tweet))
+      .then(() => Utils.redirectResponse())
+    }
+  }
+  else if (idNumber) {
+    if (!queryObj && method === 'GET') {
+      return Database.getTweetById(idString)
+      .then((tweet) => Templates.renderSinglePage(tweet, 'Get Single'))
+    }
+    else if (queryObj.delete && method === 'GET') {
+      return Database.deleteTweet(idString)
+      .then(() => Utils.redirectResponse())
+    }
+    else if (queryObj.update && method === 'GET') {
+      const tweetObj = Object.assign({}, queryObj, {id: idString})
+      return Database.updateTweets(tweetObj)
+      .then(() => Utils.redirectResponse())
+    }
+  }
+  return Promise.reject('Bad Request')
 }
 
-Handlers.requestCheckEndpoint = (req, res) => {
-  const { url, method } = req
-  if(url.split('/')[1] === 'api'){
+Handlers.requestCheckEndpoint = (req) => {
+  if(req.url.split('/')[1] === 'api'){
     console.log('DO API related operations here')
-
-    return Handlers.apiEndpointHandle(req, res)
+    return apiEndpointHandle(req)
   } else {
-    return Handlers.endpointHandle(req,res)
+    console.log('DO "/" related operations here')
+    return rootEndpointHandle(req)
   }
-
 }

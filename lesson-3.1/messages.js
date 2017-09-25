@@ -17,7 +17,7 @@ module.exports = {
   },
   "id": {
     "success": '',
-    "error": "Id not found..."
+    "error": "Id not found...",
   },
   "dataUpdate": {
     "success": "data updated...",
@@ -26,5 +26,9 @@ module.exports = {
   "dataDelete": {
     "success": "data deleted...",
     "error": "data deleted error...",
-  }
+  },
+  "notValidTweets": {
+    "success": "POST request done, tweets with not valid ids ",
+    "error": "writeFile error...",
+  },
 }

@@ -1,0 +1,14 @@
+html
+  body
+    div(style={margin: 30})
+      h3 Single Page
+      each tweet in tweets
+        form.update-tweet(action=tweet.id method='PUT')
+          label(for='user' style={color: tweet.color}) Username: &nbsp #{tweet.user} &nbsp
+          input(name='user', type='text', placeholder=' update username', autofocus='')
+          <br /><br />
+          label(for='tweet' style={color: tweet.color}) tweet: #{tweet.tweet} &nbsp
+          input(name='tweet', type='text', placeholder=' update tweet', autofocus='')
+          <br /><br />
+          input(name='update', type='submit', value="Update")
+        a(href='/' style={color: tweet.color})  HOME

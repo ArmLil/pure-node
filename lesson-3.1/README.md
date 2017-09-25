@@ -7,7 +7,7 @@ endpoints
 /{id} > render single template by id
 
 use the API for these functions
-/?create
+/create?
 /{id}?delete
 /{id}?update
 
@@ -22,4 +22,4 @@ use the API for these functions
 
 - [ ] /api/tweets/{id} DELETE
 
-- [x] /api/tweets{id} GET > single tweet
+- [x] /api/tweets/{id} GET > single tweet

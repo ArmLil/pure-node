@@ -1,0 +1,18 @@
+{
+	"tweets": [
+		{
+			"user": "Mari",
+			"tweet": "wow",
+			"create": "Create",
+			"id": "1506336586294",
+			"color": "rgb(79, 0, 103)",
+			"update": "Update"
+		},
+		{
+			"user": "Masha1",
+			"tweet": "super",
+			"id": "150592626866035",
+			"color": "rgb(34, 0, 54)"
+		}
+	]
+}
