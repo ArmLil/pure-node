@@ -23,3 +23,10 @@ use the API for these functions
 - [ ] /api/tweets/{id} DELETE
 
 - [x] /api/tweets/{id} GET > single tweet
+
+
+*** SQL ***
+
+- [ ] SELECT TWEETS
+- [ ] UPDATE TWEETS
+- [ ] DELETE TWEETS

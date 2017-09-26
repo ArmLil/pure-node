@@ -1,0 +1,11 @@
+{
+	"tweets": [
+		{
+			"user": "vachi",
+			"tweet": "likes apples",
+			"create": "Create",
+			"id": "1506449355308",
+			"colour": "rgb(222, 0, 179)"
+		}
+	]
+}
