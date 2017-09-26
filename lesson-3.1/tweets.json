@@ -1,24 +1,11 @@
 {
 	"tweets": [
 		{
-			"user": "Masha4",
-			"tweet": "I am a doctor",
-			"id": "150592626866035",
-			"colour": "rgb(34, 0, 54)",
-			"update": "Update"
-		},
-		{
-			"user": "Margo",
-			"tweet": "I am s student",
+			"user": "vachi",
+			"tweet": "likes apples",
 			"create": "Create",
-			"id": "1506429916630",
-			"colour": "rgb(95, 0, 23)"
-		},
-		{
-			"user": "Ashot1",
-			"tweet": "Freedom",
-			"id": "150592651203640",
-			"color": "rgb(64, 0, 127)"
+			"id": "1506449355308",
+			"colour": "rgb(222, 0, 179)"
 		}
 	]
 }

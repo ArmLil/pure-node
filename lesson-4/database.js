@@ -1,12 +1,43 @@
 'use strict'
 const fs = require ('fs')
+const sqlite3 = require('sqlite3').verbose()
 const Utils = require('./utils')
-
 const Messages = require('./messages')
-const TWEETS_PATH = './tweets.json'
 
+const TWEETS_PATH = './tweets.json'
+const DB = require('./tweets.sql.js')
 const Database = {}
 module.exports = Database
+
+Database.sql = new sqlite3.Database('tweets.db')
+
+const createTable = () => {
+  return new Promise((resolve, reject) => {
+    Database.sql.run(DB.createTable, (error, response) => {
+      if (error){
+        return reject(error)
+      }
+      return resolve(response)
+    })
+  })
+}
+
+const connect = (table) => {
+    return new Promise((resolve, reject) => {
+      Database.sql.run(`SELECT * from ${DB.tableName}`, (error, response) => {
+        if(error) {
+          return createTable()
+        }
+        return resolve(response)
+      })
+    })
+}
+
+connect(DB.TABLE_NAME)
+.then(console.log)
+.catch(console.error)
+
+
 
 const writeFile = (data, message) => {
   return new Promise((resolve, reject) => {
@@ -36,19 +67,34 @@ Database.tweetsArray = () => {
 }
 
 Database.addTweets = (reqBody) => {
-  return Database.tweetsArray()
-  .then((tweetsArray) => Utils.joinTweets(tweetsArray,reqBody.tweets))
-  .then((result) => {
-    let { notValidTweets, newTweetsObject } = result
-    let { message } = Messages.dataPostAdd
-    if (notValidTweets) {
-      notValidTweets = JSON.stringify(notValidTweets, null, '\t')
-      message = Messages.notValidTweets
-      message.success += notValidTweets
-    }
-    newTweetsObject = JSON.stringify(newTweetsObject, null, '\t')
-    return writeFile(newTweetsObject, message)
+  const insertValues = reqBody.tweets.map((tweet, index) => {
+    let res = '('
+    res += `'${tweet.user}', '${tweet.tweet}',  '${tweet.color}'`
+    if(index === reqBody.tweets.length-1) res += ')'
+    else res += '),'
+    return res
   })
+
+  return  Database.sql.run(`INSERT INTO ${DB.tableName} (${DB.columns.join(', ')}) VALUES ${insertValues}`, (error, response) => {
+    if(error) {
+      console.error(error)
+    }
+    console.log(response)
+  })
+
+  // return Database.tweetsArray()
+  // .then((tweetsArray) => Utils.joinTweets(tweetsArray,reqBody.tweets))
+  // .then((result) => {
+  //   let { notValidTweets, newTweetsObject } = result
+  //   let { message } = Messages.dataPostAdd
+  //   if (notValidTweets) {
+  //     notValidTweets = JSON.stringify(notValidTweets, null, '\t')
+  //     message = Messages.notValidTweets
+  //     message.success += notValidTweets
+  //   }
+  //   newTweetsObject = JSON.stringify(newTweetsObject, null, '\t')
+  //   return writeFile(newTweetsObject, message)
+  // })
 }
 
 Database.updateTweets = (newTweet) => {
