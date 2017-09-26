@@ -6,7 +6,7 @@ const server = http.createServer()
 
 server.on('request', (req, res) => {
   console.log('on server....req=', req.url)
-  if(req.url === '/favicon.ico') {
+  if (req.url === '/favicon.ico') {
     return Handlers.favicon(res)
   }
   return Handlers.requestCheckEndpoint(req,res)
@@ -15,7 +15,7 @@ server.on('request', (req, res) => {
 
     res.writeHead(code, {'Content-Type': type})
 
-    if(type === 'application/json') {
+    if (type === 'application/json') {
       res.write(JSON.stringify(response.body, null, '\t'))
     } else if (type === 'text/html' && code === 200) {
       res.write(response.body)

@@ -5,13 +5,13 @@ module.exports = Utils
 
 Utils.getQueryObj = (url) => {
   let params = url.split('?')[1]
-  if(!params) return null
+  if (!params) return null
   params = params.split('&')
   let obj = {}
   let queryObj = {}
   params.map(param => {
     const clean = param.split('=')
-    if(!clean[1]) return
+    if (!clean[1]) return
     const value = clean[1].replace(/\+/g, ' ')
     obj = {[clean[0]] : value}
     queryObj = Object.assign(queryObj, obj)
@@ -36,7 +36,7 @@ Utils.getBodyObj = (req) => {
 Utils.findTweetById = (id, tweetsArray) => {
   let result = null
   tweetsArray.map(oldTweet => {
-    if(id === oldTweet.id) {
+    if (id === oldTweet.id) {
        result = oldTweet
     }
   })
@@ -45,7 +45,7 @@ Utils.findTweetById = (id, tweetsArray) => {
 
 Utils.deleteTweetById = (id, tweetsArray) => {
   tweetsArray = tweetsArray.map(oldTweet => {
-    if(id === oldTweet.id) {
+    if (id === oldTweet.id) {
       return null
     }
     return oldTweet
@@ -55,7 +55,7 @@ Utils.deleteTweetById = (id, tweetsArray) => {
 
 Utils.updateTweet = (newTweet, tweetsArray) => {
   tweetsArray = tweetsArray.map(oldTweet => {
-    if(newTweet.id === oldTweet.id) {
+    if (newTweet.id === oldTweet.id) {
       return Object.assign({}, oldTweet, newTweet)
     }
     return oldTweet
@@ -72,7 +72,7 @@ Utils.filterInt = (value) => {
 Utils.processTweet = (tweet) => {
   const id = `${new Date().valueOf()}`
   tweet.id = id
-  tweet.color = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
+  tweet.colour = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
   const newTweetsObject = {tweets: [tweet]}
   return Promise.resolve(newTweetsObject)
 }
@@ -80,7 +80,7 @@ Utils.processTweet = (tweet) => {
 const IsUnicId = (id, tweets) => {
   let idIsUnic = true
   tweets.map(tweet => {
-    if(tweet.id == id) {
+    if (tweet.id === id) {
       idIsUnic = false
       return
     }
@@ -92,7 +92,7 @@ const checkTweetsId = (tweetsFromDb, newTweets) => {
   const notValidTweets = []
   const validTweets = newTweets.map(tweet => {
     const isUnic = IsUnicId(tweet.id, tweetsFromDb)
-    if(!isUnic) {
+    if (!isUnic) {
       notValidTweets.push(tweet)
       return null
     } else if (isUnic){
@@ -146,7 +146,7 @@ Utils.successTextResponse = (message) => {
   }))
 }
 
-Utils.redirectResponse = () => {
+Utils.redirectHomeResponse = () => {
   return Promise.resolve(Object.assign({}, {
     header: {
       code: 302,

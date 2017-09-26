@@ -30,7 +30,7 @@ Database.tweetsArray = () => {
   return Database.tweets()
   .then((dataFromDb) => {
     let tweets = []
-    if(dataFromDb) tweets = JSON.parse(dataFromDb).tweets
+    if (dataFromDb) tweets = JSON.parse(dataFromDb).tweets
     return tweets
   })
 }
@@ -41,7 +41,7 @@ Database.addTweets = (reqBody) => {
   .then((result) => {
     let { notValidTweets, newTweetsObject } = result
     let { message } = Messages.dataPostAdd
-    if(notValidTweets) {
+    if (notValidTweets) {
       notValidTweets = JSON.stringify(notValidTweets, null, '\t')
       message = Messages.notValidTweets
       message.success += notValidTweets
@@ -54,11 +54,10 @@ Database.addTweets = (reqBody) => {
 Database.updateTweets = (newTweet) => {
   return Database.tweetsArray()
   .then((tweetsArray) => {
-    if(!Utils.findTweetById(newTweet.id, tweetsArray))
+    if (!Utils.findTweetById(newTweet.id, tweetsArray))
       return Promise.reject(Messages.id.error)
     let newTweetsArray = Utils.updateTweet(newTweet, tweetsArray)
     const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
-    console.log('newTweetsObject', newTweetsObject)
     const result = JSON.stringify(newTweetsObject, null, '\t')
     return writeFile(result, Messages.dataUpdate)
   })
@@ -67,7 +66,7 @@ Database.updateTweets = (newTweet) => {
 Database.deleteTweet = (id) => {
   return Database.tweetsArray()
   .then((tweetsArray) => {
-    if(!Utils.findTweetById(id, tweetsArray))
+    if (!Utils.findTweetById(id, tweetsArray))
       return Promise.reject(Messages.id.error)
     let newTweetsArray = Utils.deleteTweetById(id, tweetsArray)
     const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
@@ -80,7 +79,7 @@ Database.getTweetById = (id) => {
   return Database.tweetsArray()
   .then((tweetsArray) => {
     const tweet = Utils.findTweetById(id, tweetsArray)
-    if(!tweet) return Promise.reject(Messages.tweet.error)
+    if (!tweet) return Promise.reject(Messages.tweet.error)
     return {tweets: [tweet]}
   })
 }
