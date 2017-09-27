@@ -56,11 +56,13 @@ const apiEndpointHandle = (req) => {
         .then(tweet => Utils.successGetResponse(tweet))
       }
       else if (method === 'PUT') {
-        const tweetObj = Object.assign({}, queryObj, {id:idString})
-        if  (queryObj) {
-          return Database.updateTweets(tweetObj)
-          .then((message) => Utils.successTextResponse(message))
-        }
+        return Utils.getBodyObj(req)
+        .then((tweetObj) => {
+          const tweet = Object.assign({}, tweetObj.tweets[0], {id:idString})
+          tweetObj = Object.assign({}, { tweet: [tweet] })
+          return Database.updateTweets(tweet)
+        })
+        .then((message) => Utils.successTextResponse(message))
       }
       else if (method === 'DELETE' && !queryObj) {
         return Database.deleteTweet(idString)

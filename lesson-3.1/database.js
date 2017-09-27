@@ -29,9 +29,12 @@ Database.tweets = () => {
 Database.tweetsArray = () => {
   return Database.tweets()
   .then((dataFromDb) => {
-    let tweets = []
-    if (dataFromDb) tweets = JSON.parse(dataFromDb).tweets
-    return tweets
+    let tweetsArray = []
+    if (dataFromDb) {
+      const newDataFromDb = JSON.parse(dataFromDb)
+      tweetsArray = newDataFromDb.tweets
+    }
+    return tweetsArray
   })
 }
 
