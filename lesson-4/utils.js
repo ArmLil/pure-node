@@ -77,6 +77,12 @@ Utils.processTweet = (tweet) => {
   return Promise.resolve(newTweetsObject)
 }
 
+Utils.addColorTweet = (tweet) => {
+  tweet.colour = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
+  const newTweetsObject = {tweets: [tweet]}
+  return newTweetsObject
+}
+
 const IsUnicId = (id, tweets) => {
   let idIsUnic = true
   tweets.map(tweet => {

@@ -59,7 +59,6 @@ const apiEndpointHandle = (req) => {
         return Utils.getBodyObj(req)
         .then((tweetObj) => {
           const tweet = Object.assign({}, tweetObj.tweets[0], {id:idString})
-          tweetObj = Object.assign({}, { tweet: [tweet] })
           return Database.updateTweets(tweet)
         })
         .then((message) => Utils.successTextResponse(message))

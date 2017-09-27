@@ -23,14 +23,15 @@ const createTable = () => {
 }
 
 const connect = (table) => {
-    return new Promise((resolve, reject) => {
-      Database.sql.run(`SELECT * from ${DB.tableName}`, (error, response) => {
-        if(error) {
-          return createTable()
-        }
-        return resolve(response)
-      })
+  return new Promise((resolve, reject) => {
+    Database.sql.run(`SELECT * from ${DB.tableName}`, (error, response) => {
+      console.log('connect', DB.tableName, response)
+      if(error) {
+        return createTable()
+      }
+      return resolve(response)
     })
+  })
 }
 
 connect(DB.TABLE_NAME)
@@ -66,13 +67,15 @@ Database.tweetsArray = () => {
   })
 }
 
-Database.addTweets = (reqBody) => {
-  const insertValues = reqBody.tweets.map((tweet, index) => {
-    let res = '('
-    res += `'${tweet.user}', '${tweet.tweet}',  '${tweet.color}'`
-    if(index === reqBody.tweets.length-1) res += ')'
-    else res += '),'
-    return res
+Database.addTweets = (tweetsObj) => {
+  const insertValues = tweetsObj.tweets.map((tweet, index) => {
+    tweet = Utils.addColorTweet(tweet)
+    console.log('addTweets', tweet)
+    let result = '('
+    result += `'${tweet.user}', '${tweet.tweet}', '${tweet.color}'`
+    if (index === tweetsObj.tweets.length-1) result += ')'
+    else result += '),'
+    return result
   })
 
   return  Database.sql.run(`INSERT INTO ${DB.tableName} (${DB.columns.join(', ')}) VALUES ${insertValues}`, (error, response) => {
