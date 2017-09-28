@@ -30,3 +30,10 @@ use the API for these functions
 - [ ] SELECT TWEETS
 - [ ] UPDATE TWEETS
 - [ ] DELETE TWEETS
+
+
+Lesson 5 notes
+https://hapijs.com/api
+https://github.com/glennjones/hapi-swagger
+https://www.npmjs.com/package/vision#jade
+https://hapijs.com/tutorials/views

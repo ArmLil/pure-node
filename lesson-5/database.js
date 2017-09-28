@@ -92,7 +92,7 @@ Database.deleteTweet = (tweetId) => {
 Database.deleteUpdateTweet = (tweetId) => {
   const updateQuery = (tweetId) => {
     let result = `UPDATE ${DB.tableName} SET `
-    result += `deleted_at = '${new Date().toString()}' `
+    result += `deleted_at = '${Utils.dbDate()}' `
     result += `WHERE id = ${tweetId}`
     return result
   }

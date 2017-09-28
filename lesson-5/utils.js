@@ -85,3 +85,16 @@ Utils.redirectHomeResponse = () => {
     }
   }))
 }
+
+Utils.dbDate = (date) => {
+  const d = date || new Date()
+
+  const F = d.getUTCFullYear()
+  const M = d.getUTCMonth()
+  const D = d.getUTCDate()
+  const H = d.getUTCHours()
+  const M = d.getUTCMinutes()
+  const S = d.getUTCSeconds()
+
+  return `${F}-${M}-${D} ${H}:${M}:${S}`
+}
