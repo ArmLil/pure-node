@@ -33,87 +33,10 @@ Utils.getBodyObj = (req) => {
   })
 }
 
-Utils.findTweetById = (id, tweetsArray) => {
-  let result = null
-  tweetsArray.map(oldTweet => {
-    if (id === oldTweet.id) {
-       result = oldTweet
-    }
-  })
- return result
-}
-
-Utils.deleteTweetById = (id, tweetsArray) => {
-  tweetsArray = tweetsArray.map(oldTweet => {
-    if (id === oldTweet.id) {
-      return null
-    }
-    return oldTweet
-  })
- return tweetsArray
-}
-
-Utils.updateTweet = (newTweet, tweetsArray) => {
-  tweetsArray = tweetsArray.map(oldTweet => {
-    if (newTweet.id === oldTweet.id) {
-      return Object.assign({}, oldTweet, newTweet)
-    }
-    return oldTweet
-  })
- return tweetsArray
-}
-
 Utils.filterInt = (value) => {
   if (/^(\-|\+)?([0-9]+|Infinity)$/.test(value))
     return Number(value);
   return NaN;
-}
-
-Utils.processTweet = (tweet) => {
-  const id = `${new Date().valueOf()}`
-  tweet.id = id
-  tweet.colour = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
-  const newTweetsObject = {tweets: [tweet]}
-  return Promise.resolve(newTweetsObject)
-}
-
-Utils.addColorTweet = (tweet) => {
-  tweet.colour = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
-  const newTweetsObject = {tweets: [tweet]}
-  return newTweetsObject
-}
-
-const IsUnicId = (id, tweets) => {
-  let idIsUnic = true
-  tweets.map(tweet => {
-    if (tweet.id === id) {
-      idIsUnic = false
-      return
-    }
-  })
-  return idIsUnic
-}
-
-const checkTweetsId = (tweetsFromDb, newTweets) => {
-  const notValidTweets = []
-  const validTweets = newTweets.map(tweet => {
-    const isUnic = IsUnicId(tweet.id, tweetsFromDb)
-    if (!isUnic) {
-      notValidTweets.push(tweet)
-      return null
-    } else if (isUnic){
-      return tweet
-    }
-  })
-  return { notValidTweets, validTweets }
-}
-
-Utils.joinTweets = (tweetsFromDb, bodyArray) => {
-  const checkedTweets = checkTweetsId(tweetsFromDb, bodyArray)
-  let { notValidTweets, validTweets } = checkedTweets
-  let newTweetsArray = tweetsFromDb.concat(validTweets)
-  const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
-  return Promise.resolve({ notValidTweets, newTweetsObject})
 }
 
 Utils.dbNotExistResponse = () => {

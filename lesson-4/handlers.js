@@ -5,12 +5,9 @@ const Database = require('./database')
 const Utils = require('./utils')
 
 const FAVICON = './public/tweets.pug'
-const TWEETS_PATH = './tweets.json'
 
 const Handlers = {}
 module.exports = Handlers
-
-const fileExists = fs.existsSync(TWEETS_PATH)
 
 Handlers.favicon = (res) => {
   res.writeHead(200, {'Content-Type': 'image/x-icon'} );
@@ -21,7 +18,6 @@ Handlers.favicon = (res) => {
 
 const apiEndpointHandle = (req) => {
   const {url, method } = req
-  if (!fileExists) return Utils.dbNotExistResponse()
 
   const endpoint = url.replace('/api/','')
   const endpointParts = endpoint.split('/')
@@ -39,14 +35,14 @@ const apiEndpointHandle = (req) => {
 
   if (endpointParts[0] === 'tweets') {
     if (endpointParts.length === 1) {
-      if (method === 'POST') {
+      if (method === 'GET') {
+        return Database.getTweets()
+        .then(tweets => Utils.successGetResponse(tweets))
+      }
+      else if (method === 'POST') {
         return Utils.getBodyObj(req)
         .then((body) => Database.addTweets(body))
         .then((message) => Utils.successTextResponse(message))
-      }
-      else if (method === 'GET') {
-        return Database.tweets()
-        .then(tweets => Utils.successGetResponse(JSON.parse(tweets)))
       }
     }
     else if (endpointParts.length === 2 && idNumber) {
@@ -58,8 +54,11 @@ const apiEndpointHandle = (req) => {
       else if (method === 'PUT') {
         return Utils.getBodyObj(req)
         .then((tweetObj) => {
-          const tweet = Object.assign({}, tweetObj.tweets[0], {id:idString})
-          return Database.updateTweets(tweet)
+          if(tweetObj.tweets.length === 1) {
+            const tweet = Object.assign({}, tweetObj.tweets[0], {id:idString})
+            return Database.updateTweets(tweet)
+          }
+          else return 'body for'
         })
         .then((message) => Utils.successTextResponse(message))
       }
@@ -73,7 +72,6 @@ const apiEndpointHandle = (req) => {
 }
 
 const rootEndpointHandle = (req) => {
-  if (!fileExists) return Utils.dbNotExistResponse()
 
   const {url, method } = req
   const endpointParts = url.split('/')
@@ -84,23 +82,21 @@ const rootEndpointHandle = (req) => {
   const idNumber = Utils.filterInt(idString)
   const queryObj = Utils.getQueryObj(url)
   if (url === '/') {
-    return Database.tweets()
+    return Database.getTweets()
     .then(tweets => {
       if (!tweets) tweets = {tweets:[]}
-      tweets = JSON.parse(tweets)
       return Templates.renderHomePage(tweets, 'Get HomePage')
     })
   }
   else if (url.split('?')[0] === '/create') {
     if  (method === 'GET') {
-      return Utils.processTweet(queryObj)
-      .then(tweet => Database.addTweets(tweet))
+      return Database.addTweets({tweets: [queryObj]})
       .then(() => Utils.redirectHomeResponse())
     }
   }
   else if (idNumber) {
     if  (!queryObj && method === 'GET') {
-      return Database.getTweetById(idString)
+      return Database.getTweetById(idNumber)
       .then((data) => Templates.renderSinglePage(data.tweets[0], 'Get Single'))
     }
     else if (queryObj.delete && method === 'GET') {

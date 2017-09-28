@@ -2,133 +2,89 @@
 const fs = require ('fs')
 const sqlite3 = require('sqlite3').verbose()
 const Utils = require('./utils')
-const Messages = require('./messages')
+const MESSAGES = require('./messages')
 
 const TWEETS_PATH = './tweets.json'
 const DB = require('./tweets.sql.js')
 const Database = {}
 module.exports = Database
 
-Database.sql = new sqlite3.Database('tweets.db')
+//connect to database
+Database.sql = new sqlite3.Database('tweets.db', (err) => {
+  if (err) {
+    return console.error(MESSAGES.sqliteDb.error+err.message);
+  }
+  console.log(MESSAGES.sqliteDb.success)
+})
 
-const createTable = () => {
+//creates table if db or table not exist
+Database.sql.run(DB.createTable)
+
+Database.getTweets = () => {
   return new Promise((resolve, reject) => {
-    Database.sql.run(DB.createTable, (error, response) => {
-      if (error){
-        return reject(error)
-      }
-      return resolve(response)
+    Database.sql.all(`SELECT * from ${DB.tableName}`, (err, result) => {
+      if(err) return reject(MESSAGES.readFile.error+err)
+      const tweetsObj = {tweets:result}
+      return resolve(tweetsObj)
     })
   })
 }
 
-const connect = (table) => {
+Database.getTweetById = (tweetId) => {
   return new Promise((resolve, reject) => {
-    Database.sql.run(`SELECT * from ${DB.tableName}`, (error, response) => {
-      console.log('connect', DB.tableName, response)
-      if(error) {
-        return createTable()
-      }
-      return resolve(response)
+    Database.sql.get(`SELECT * from ${DB.tableName} WHERE id=${tweetId}`, (err, tweet) => {
+      if(err) return reject(MESSAGES.readFile.error+err)
+      return resolve({tweets: [tweet]})
     })
-  })
-}
-
-connect(DB.TABLE_NAME)
-.then(console.log)
-.catch(console.error)
-
-
-
-const writeFile = (data, message) => {
-  return new Promise((resolve, reject) => {
-    fs.writeFile(TWEETS_PATH, data, (err) => {
-      if (err) return reject(message.error, err)
-    })
-    return resolve(message.success)
-  })
-}
-
-Database.tweets = () => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(TWEETS_PATH, 'utf8', (err, data) => {
-      if (err) return reject(Messages.readFile.error, err)
-      resolve(data)
-    })
-  })
-}
-
-Database.tweetsArray = () => {
-  return Database.tweets()
-  .then((dataFromDb) => {
-    let tweets = []
-    if (dataFromDb) tweets = JSON.parse(dataFromDb).tweets
-    return tweets
   })
 }
 
 Database.addTweets = (tweetsObj) => {
   const insertValues = tweetsObj.tweets.map((tweet, index) => {
-    tweet = Utils.addColorTweet(tweet)
-    console.log('addTweets', tweet)
+    tweet.color = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
     let result = '('
     result += `'${tweet.user}', '${tweet.tweet}', '${tweet.color}'`
-    if (index === tweetsObj.tweets.length-1) result += ')'
-    else result += '),'
+    result += ')'
     return result
   })
 
-  return  Database.sql.run(`INSERT INTO ${DB.tableName} (${DB.columns.join(', ')}) VALUES ${insertValues}`, (error, response) => {
-    if(error) {
-      console.error(error)
-    }
-    console.log(response)
+  return new Promise((resolve, reject) => {
+    Database.sql.run(`INSERT INTO ${DB.tableName} (${DB.columns.join(', ')}) VALUES ${insertValues}`, (err) => {
+      if (err) return reject(MESSAGES.dataPostAdd.error+err)
+      return resolve(MESSAGES.dataPostAdd.success)
+    })
   })
-
-  // return Database.tweetsArray()
-  // .then((tweetsArray) => Utils.joinTweets(tweetsArray,reqBody.tweets))
-  // .then((result) => {
-  //   let { notValidTweets, newTweetsObject } = result
-  //   let { message } = Messages.dataPostAdd
-  //   if (notValidTweets) {
-  //     notValidTweets = JSON.stringify(notValidTweets, null, '\t')
-  //     message = Messages.notValidTweets
-  //     message.success += notValidTweets
-  //   }
-  //   newTweetsObject = JSON.stringify(newTweetsObject, null, '\t')
-  //   return writeFile(newTweetsObject, message)
-  // })
 }
 
 Database.updateTweets = (newTweet) => {
-  return Database.tweetsArray()
-  .then((tweetsArray) => {
-    if (!Utils.findTweetById(newTweet.id, tweetsArray))
-      return Promise.reject(Messages.id.error)
-    let newTweetsArray = Utils.updateTweet(newTweet, tweetsArray)
-    const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
-    const result = JSON.stringify(newTweetsObject, null, '\t')
-    return writeFile(result, Messages.dataUpdate)
+  const updateQuery = (newTweet) => {
+    let result = `UPDATE ${DB.tableName} SET `
+    if (newTweet.user && newTweet.tweet) {
+      result += `user = '${newTweet.user}', `
+      result += `tweet = '${newTweet.tweet}' `
+    }
+    else if (newTweet.user && !newTweet.tweet) {
+      result += `user = '${newTweet.user}' `
+    }
+    else if (!newTweet.user && newTweet.tweet) {
+      result += `tweet = '${newTweet.tweet}' `
+    }
+    result += `WHERE id = ${parseInt(newTweet.id)}`
+    return result
+  }
+  return new Promise((resolve, reject) => {
+    Database.sql.run(updateQuery(newTweet), (err, tweet) => {
+      if(err) return reject(MESSAGES.dataUpdate.error+err)
+      return resolve(MESSAGES.dataUpdate.success)
+    })
   })
 }
 
-Database.deleteTweet = (id) => {
-  return Database.tweetsArray()
-  .then((tweetsArray) => {
-    if (!Utils.findTweetById(id, tweetsArray))
-      return Promise.reject(Messages.id.error)
-    let newTweetsArray = Utils.deleteTweetById(id, tweetsArray)
-    const newTweetsObject = {tweets: newTweetsArray.filter(n => n)}
-    const result = JSON.stringify(newTweetsObject, null, '\t')
-    return writeFile(result, Messages.dataDelete)
-  })
-}
-
-Database.getTweetById = (id) => {
-  return Database.tweetsArray()
-  .then((tweetsArray) => {
-    const tweet = Utils.findTweetById(id, tweetsArray)
-    if (!tweet) return Promise.reject(Messages.tweet.error)
-    return {tweets: [tweet]}
+Database.deleteTweet = (tweetId) => {
+  return new Promise((resolve, reject) => {
+    Database.sql.run(`DELETE from ${DB.tableName} WHERE id=${tweetId}`, (err, tweet) => {
+      if(err) return reject(MESSAGES.dataDelete.error+err)
+      return resolve(MESSAGES.dataDelete.success+err)
+    })
   })
 }

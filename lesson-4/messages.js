@@ -1,11 +1,7 @@
 module.exports = {
-  "dataPostCreate": {
-    "success": "POST request, data created...",
-    "error": "appendFile error...",
-  },
   "dataPostAdd": {
     "success": "POST request, data written to database...",
-    "error": "writeFile error...",
+    "error": "insert data error...",
   },
   "readFile": {
     "success": "data read from database...",
@@ -31,4 +27,8 @@ module.exports = {
     "success": "POST request done, tweets with not valid ids ",
     "error": "writeFile error...",
   },
+  "sqliteDb": {
+    "success": "Connected to the tweets.db SQlite database",
+    "error": "db connection error...",
+  }
 }
