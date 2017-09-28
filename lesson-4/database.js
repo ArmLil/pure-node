@@ -22,7 +22,7 @@ Database.sql.run(DB.createTable)
 
 Database.getTweets = () => {
   return new Promise((resolve, reject) => {
-    Database.sql.all(`SELECT * from ${DB.tableName}`, (err, result) => {
+    Database.sql.all(`SELECT * from ${DB.tableName} WHERE deleted_at IS NULL`, (err, result) => {
       if(err) return reject(MESSAGES.readFile.error+err)
       const tweetsObj = {tweets:result}
       return resolve(tweetsObj)
@@ -88,3 +88,20 @@ Database.deleteTweet = (tweetId) => {
     })
   })
 }
+
+Database.deleteUpdateTweet = (tweetId) => {
+  const updateQuery = (tweetId) => {
+    let result = `UPDATE ${DB.tableName} SET `
+    result += `deleted_at = '${new Date().toString()}' `
+    result += `WHERE id = ${tweetId}`
+    return result
+  }
+  return new Promise((resolve, reject) => {
+    Database.sql.run(updateQuery(tweetId), (err, tweet) => {
+      if(err) return reject(MESSAGES.dataDelete.error+err)
+      return resolve(MESSAGES.dataDelete.success)
+    })
+  })
+}
+
+return Database.deleteUpdateTweet(3)

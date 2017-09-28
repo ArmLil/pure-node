@@ -100,7 +100,7 @@ const rootEndpointHandle = (req) => {
       .then((data) => Templates.renderSinglePage(data.tweets[0], 'Get Single'))
     }
     else if (queryObj.delete && method === 'GET') {
-      return Database.deleteTweet(idString)
+      return Database.deleteUpdateTweet(idNumber)
       .then(() => Utils.redirectHomeResponse())
     }
     else if (queryObj.update && method === 'GET') {
