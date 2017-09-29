@@ -1,3 +1,4 @@
 package-lock.json
 junk.js
 node_modules
+*.db

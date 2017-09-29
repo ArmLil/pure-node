@@ -37,3 +37,7 @@ https://hapijs.com/api
 https://github.com/glennjones/hapi-swagger
 https://www.npmjs.com/package/vision#jade
 https://hapijs.com/tutorials/views
+
+Lesson 5 continued use
+https://developer.mozilla.org/en-US/docs/AJAX/Getting_Started
+https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest

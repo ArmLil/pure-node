@@ -30,9 +30,9 @@ Database.getTweets = () => {
   })
 }
 
-Database.getTweetById = (tweetId) => {
+Database.getTweetById = (id) => {
   return new Promise((resolve, reject) => {
-    Database.sql.get(`SELECT * from ${DB.tableName} WHERE id=${tweetId}`, (err, tweet) => {
+    Database.sql.get(`SELECT * from ${DB.tableName} WHERE id=${id}`, (err, tweet) => {
       if(err) return reject(MESSAGES.readFile.error+err)
       return resolve(tweet)
     })
@@ -54,46 +54,35 @@ Database.addTweets = (tweetsObj) => {
   })
 }
 
-Database.updateTweets = (newTweet, tweetId) => {
-  const updateQuery = () => {
-    let result = `UPDATE ${DB.tableName} SET `
-    if (newTweet.user && newTweet.tweet) {
-      result += `user = '${newTweet.user}', `
-      result += `tweet = '${newTweet.tweet}' `
-    }
-    else if (newTweet.user && !newTweet.tweet) {
-      result += `user = '${newTweet.user}' `
-    }
-    else if (!newTweet.user && newTweet.tweet) {
-      result += `tweet = '${newTweet.tweet}' `
-    }
-    result += `WHERE id = ${tweetId}`
-    return result
-  }
-  Database.sql.run(updateQuery(), (err) => {
-    if(err) return Promise.reject((MESSAGES.dataUpdate.error+err))
-    return Promise.resolve(MESSAGES.dataUpdate.success)
+Database.updateTweets = (user, tweet, id) => {
+  const query = `UPDATE ${DB.tableName} SET user = '${user}', tweet = '${tweet}'  WHERE id = ${id}`
+
+  return new Promise((resolve, reject) => {
+    Database.sql.run(query, (err) => {
+      if(err) return reject(err)
+      return resolve(MESSAGES.dataUpdate.success)
+    })
   })
 }
 
-Database.deleteTweet = (tweetId) => {
+Database.deleteTweet = (id) => {
   return new Promise((resolve, reject) => {
-    Database.sql.run(`DELETE from ${DB.tableName} WHERE id=${tweetId}`, (err, tweet) => {
+    Database.sql.run(`DELETE from ${DB.tableName} WHERE id=${id}`, (err, tweet) => {
       if(err) return reject(MESSAGES.dataDelete.error+err)
       return resolve(MESSAGES.dataDelete.success+err)
     })
   })
 }
 
-Database.deleteUpdateTweet = (tweetId) => {
-  const updateQuery = (tweetId) => {
+Database.deleteUpdateTweet = (id) => {
+  const updateQuery = (id) => {
     let result = `UPDATE ${DB.tableName} SET `
     result += `deleted_at = '${Utils.dbDate()}' `
-    result += `WHERE id = ${tweetId}`
+    result += `WHERE id = ${id}`
     return result
   }
   return new Promise((resolve, reject) => {
-    Database.sql.run(updateQuery(tweetId), (err, tweet) => {
+    Database.sql.run(updateQuery(id), (err, tweet) => {
       if(err) return reject(MESSAGES.dataDelete.error+err)
       return resolve(MESSAGES.dataDelete.success)
     })

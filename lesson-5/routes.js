@@ -1,3 +1,4 @@
+const Joi = require('joi')
 const Database = require('./database')
 const Handlers = require('./handlers')
 const Templates = require('./templates')
@@ -5,6 +6,18 @@ const Utils = require('./utils')
 
 const Routes = []
 module.exports = Routes
+
+Routes.push({
+  method: 'GET',
+  path: '/{param*}',
+  handler: {
+    directory: {
+        path: '.',
+        redirectToSlash: true,
+        index: true,
+    }
+  }
+})
 
 Routes.push({
   method: 'GET',
@@ -68,22 +81,52 @@ Routes.push({
 })
 
 Routes.push({
-  method: 'GET',
+  method: 'POST',
   path: '/create',
   config: {
     handler: Handlers.createEndpoint,
     description: 'This creates tweet in db',
     notes: 'It is written without promises!!!',
-    tags : ['template']
+    tags : ['template'],
+    validate: {
+      payload: {
+        user: Joi.string().required().min(3).max(255),
+        tweet: Joi.string().required().min(2).max(140),
+      }
+    }
+  }
+})
+
+Routes.push({
+  method: 'POST',
+  path: '/update/{id}',
+  handler: Handlers.updateEndpoint,
+  config: {
+    description: 'This updates tweet by its id',
+    tags : ['template'],
+    validate: {
+      params: {
+        id: Joi.string()
+      },
+      payload: {
+        user: Joi.string().min(3).max(255),
+        tweet: Joi.string().min(2).max(140),
+      }
+    }
   }
 })
 
 Routes.push({
   method: 'GET',
-  path: '/{id}',
-  handler: Handlers.idEndpoint,
+  path: '/delete/{id}',
+  handler: Handlers.deleteEndpoint,
   config: {
-    description: 'This gets tweet by its id',
-    tags : ['template']
+    description: 'This deletes tweet by its id',
+    tags : ['template'],
+    validate: {
+      params: {
+        id: Joi.string()
+      }
+    }
   }
 })

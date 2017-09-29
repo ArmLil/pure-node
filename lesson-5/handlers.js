@@ -1,5 +1,5 @@
 'use strict'
-const fs = require ('fs')
+const Boom = require('boom')
 const Templates = require('./templates')
 const Database = require('./database')
 const Utils = require('./utils')
@@ -56,32 +56,42 @@ Handlers.rootEndpoint = (req, reply) => {
 }
 
 Handlers.createEndpoint = (req, reply) => {
-  console.log(req.query)
-  return Database.addTweets({tweets: [req.query]})
+  const tweet = {
+    user: req.payload.user,
+    tweet: req.payload.tweet,
+  }
+
+  return Database.addTweets({tweets: [tweet]})
   .then(reply.redirect('/'))
-  .catch((err) => reply('Opps ' + err))
+  .catch((err) => reply(Boom.badRequest(err)))
 }
 
-Handlers.idEndpoint = (req, reply) => {
-  const { search, query, path} = req.url
-  const { id } = req.params
-  //console.log( !search, query, path, {search})
-  if (!search) {
-    return Database.getTweetById(id)
-    .then((tweet) => reply.view('single', tweet))
-    .catch((err) => reply('Opps ' + err))
+Handlers.updateEndpoint = (req, reply) => {
+  const tweet = {
+    user: req.payload.user,
+    tweet: req.payload.tweet,
   }
-  else {
-    if (query.delete) {
-      return Database.deleteUpdateTweet(id)
-      .then(reply.redirect('/'))
-      .catch((err) => reply('Opps '+ err))
-    }
-    else if (query.update)
-      if(!(query.user || query.tweet)) reply('Please input the data')
-      else {
-        Database.updateTweets(query, id)
-        reply.redirect('/')
-      }
-    }
+
+  const { id } = req.params
+
+  return Database.updateTweets(tweet.user, tweet.tweet, id)
+  .then(reply.redirect('/'))
+  .catch((err) => {
+    return reply(Boom.badRequest(err))
+  })
+}
+
+Handlers.deleteEndpoint = (req, reply) => {
+  const { id } = req.params
+
+  return Database.deleteUpdateTweet(id)
+  .then(reply.redirect('/'))
+  .catch((err) => reply(Boom.badRequest(err)))
+}
+
+Handlers.getEndpoint = (req, reply) => {
+  const { id } = req.params
+  return Database.getTweetById(id)
+    .then((tweet) => reply.view('single', tweet))
+    .catch((err) => reply(Boom.badRequest(err)))
 }

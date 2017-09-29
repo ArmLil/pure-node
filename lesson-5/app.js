@@ -16,6 +16,11 @@ server.connection({
   port: 5000,
   router: {
     stripTrailingSlash: true
+  },
+  routes: {
+    files: {
+      relativeTo: __dirname + '/public'
+    }
   }
 })
 server.register([
@@ -32,7 +37,7 @@ server.register([
   }], (error) => {
     server.views({
       engines: { pug: require('pug') },
-      path: __dirname + '/public',
+      path: __dirname + '/public/templates',
       compileOptions: { pretty: true }
     })
 

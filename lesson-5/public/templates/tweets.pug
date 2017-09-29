@@ -2,35 +2,38 @@ html
   body
    div
     h3(style={margin: 30}) Home Page
-    form#new-tweet(action='/create' method='PUT')
+    form#new-tweet(action='/create' method='POST')
       fieldset
         legend New Tweet
         div
           <br />
           label(for='user') Username: &nbsp;
-          input(name='user', type='text', placeholder=' your username', required='', autofocus='')
+          input(name='user', type='text', placeholder=' your username', required='', autofocus='' value="vachi")
         div
           <br />
           label(for='tweet') tweet: &nbsp;
           input(name='tweet', type='text', required='', autofocus='')
         div
           <br /> &nbsp;
-          input(name='create', type='submit', value='Create')
+          button Create
     ul
       h4 Tweets <br />
       each tweet in tweets
         li
-          form.update-tweet(action=tweet.id method='PUT')
+          form.update-tweet(action='/update/'+tweet.id method='POST')
             label(for='user' style={color: tweet.colour}) Username: &nbsp #{tweet.user} &nbsp
-            input(name='user', type='text', placeholder=' update username', autofocus='')
+            input(name='user', type='text', placeholder=' update username', autofocus='', value=tweet.user)
             <br /><br />
             label(for='tweet' style={color: tweet.colour}) tweet: #{tweet.tweet} &nbsp;
-            input(name='tweet', type='text', placeholder=' update tweet', autofocus='')
+            input(name='tweet', type='text', placeholder=' update tweet', autofocus='', value=tweet.tweet)
             <br /><br />
-            input(name='update', type='submit', value="Update")
+            button Update
           a(href=tweet.id style={color: tweet.colour})  id: #{tweet.id} <br /> <br />
-          form.delete-tweet(action=tweet.id method='DELETE')
-            input(name='delete', type='submit', value="Delete")
+          form.delete-tweet(action='/delete/'+tweet.id method='GET')
+            button Delete
           <br /><br />
       else
         li There are no tweets
+    
+    | <script type="text/javascript" src="/js/tweets.js"></script>
+    
