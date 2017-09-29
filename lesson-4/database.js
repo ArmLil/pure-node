@@ -103,5 +103,3 @@ Database.deleteUpdateTweet = (tweetId) => {
     })
   })
 }
-
-return Database.deleteUpdateTweet(3)

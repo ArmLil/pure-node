@@ -93,8 +93,8 @@ Utils.dbDate = (date) => {
   const M = d.getUTCMonth()
   const D = d.getUTCDate()
   const H = d.getUTCHours()
-  const M = d.getUTCMinutes()
+  const Min = d.getUTCMinutes()
   const S = d.getUTCSeconds()
 
-  return `${F}-${M}-${D} ${H}:${M}:${S}`
+  return `${F}-${M}-${D} ${H}:${Min}:${S}`
 }

@@ -34,7 +34,7 @@ Database.getTweetById = (tweetId) => {
   return new Promise((resolve, reject) => {
     Database.sql.get(`SELECT * from ${DB.tableName} WHERE id=${tweetId}`, (err, tweet) => {
       if(err) return reject(MESSAGES.readFile.error+err)
-      return resolve({tweets: [tweet]})
+      return resolve(tweet)
     })
   })
 }
@@ -42,9 +42,7 @@ Database.getTweetById = (tweetId) => {
 Database.addTweets = (tweetsObj) => {
   const insertValues = tweetsObj.tweets.map((tweet, index) => {
     tweet.color = `rgb(${parseInt(Math.random()*300)}, 0, ${parseInt(Math.random()*200)})`
-    let result = '('
-    result += `'${tweet.user}', '${tweet.tweet}', '${tweet.color}'`
-    result += ')'
+    let result = `('${tweet.user}', '${tweet.tweet}', '${tweet.color}')`
     return result
   })
 
@@ -56,8 +54,8 @@ Database.addTweets = (tweetsObj) => {
   })
 }
 
-Database.updateTweets = (newTweet) => {
-  const updateQuery = (newTweet) => {
+Database.updateTweets = (newTweet, tweetId) => {
+  const updateQuery = () => {
     let result = `UPDATE ${DB.tableName} SET `
     if (newTweet.user && newTweet.tweet) {
       result += `user = '${newTweet.user}', `
@@ -69,14 +67,12 @@ Database.updateTweets = (newTweet) => {
     else if (!newTweet.user && newTweet.tweet) {
       result += `tweet = '${newTweet.tweet}' `
     }
-    result += `WHERE id = ${parseInt(newTweet.id)}`
+    result += `WHERE id = ${tweetId}`
     return result
   }
-  return new Promise((resolve, reject) => {
-    Database.sql.run(updateQuery(newTweet), (err, tweet) => {
-      if(err) return reject(MESSAGES.dataUpdate.error+err)
-      return resolve(MESSAGES.dataUpdate.success)
-    })
+  Database.sql.run(updateQuery(), (err) => {
+    if(err) return Promise.reject((MESSAGES.dataUpdate.error+err))
+    return Promise.resolve(MESSAGES.dataUpdate.success)
   })
 }
 
@@ -103,5 +99,3 @@ Database.deleteUpdateTweet = (tweetId) => {
     })
   })
 }
-
-return Database.deleteUpdateTweet(3)

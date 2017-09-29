@@ -9,117 +9,79 @@ const FAVICON = './public/tweets.pug'
 const Handlers = {}
 module.exports = Handlers
 
-Handlers.favicon = (res) => {
-  res.writeHead(200, {'Content-Type': 'image/x-icon'} );
-  fs.createReadStream(FAVICON).pipe(res);
-  res.end();
-  return
+
+Handlers.apiDeleteByIdEndpoint = (req, reply) => {
+  console.log('api delete')
+  const { id } = req.params
+    return Database.deleteUpdateTweet(id)
+    .then(reply)
+    .catch((err) => reply('Opps '+ err))
 }
 
-const apiEndpointHandle = (req) => {
-  const {url, method } = req
-
-  const endpoint = url.replace('/api/','')
-  const endpointParts = endpoint.split('/')
-
-  // Checking for correct query
-  let idString = ''
-  if (endpointParts[1]) {
-    if (endpointParts[1].includes('?')) {
-      idString = endpointParts[1].split('?')[0]
-    }
-    else idString = endpointParts[1]
-  }
-  const idNumber = Utils.filterInt(idString)
-  //
-
-  if (endpointParts[0] === 'tweets') {
-    if (endpointParts.length === 1) {
-      if (method === 'GET') {
-        return Database.getTweets()
-        .then(tweets => Utils.successGetResponse(tweets))
-      }
-      else if (method === 'POST') {
-        return Utils.getBodyObj(req)
-        .then((body) => Database.addTweets(body))
-        .then((message) => Utils.successTextResponse(message))
-      }
-    }
-    else if (endpointParts.length === 2 && idNumber) {
-      const queryObj = Utils.getQueryObj(url)
-      if  (method === 'GET') {
-        return Database.getTweetById(idString)
-        .then(tweet => Utils.successGetResponse(tweet))
-      }
-      else if (method === 'PUT') {
-        return Utils.getBodyObj(req)
-        .then((tweetObj) => {
-          if(tweetObj.tweets.length === 1) {
-            const tweet = Object.assign({}, tweetObj.tweets[0], {id:idString})
-            return Database.updateTweets(tweet)
-          }
-          else return 'body for'
-        })
-        .then((message) => Utils.successTextResponse(message))
-      }
-      else if (method === 'DELETE' && !queryObj) {
-        return Database.deleteTweet(idString)
-        .then((message) => Utils.successTextResponse(message))
-      }
-    }
-  }
-  return Promise.reject('Bad Request')
+Handlers.apiGetByIdEndpoint = (req, reply) => {
+  console.log('api get by id')
+  const { id } = req.params
+    return Database.getTweetById(id)
+    .then((tweet) => reply(tweet))
+    .catch((err) => reply('Opps '+ err))
 }
 
-const rootEndpointHandle = (req) => {
-
-  const {url, method } = req
-  const endpointParts = url.split('/')
-
-  if  (!endpointParts.length === 2) Promise.reject('Bad Request')
-
-  const idString = endpointParts[1].split('?')[0]
-  const idNumber = Utils.filterInt(idString)
-  const queryObj = Utils.getQueryObj(url)
-  if (url === '/') {
-    return Database.getTweets()
-    .then(tweets => {
-      if (!tweets) tweets = {tweets:[]}
-      return Templates.renderHomePage(tweets, 'Get HomePage')
-    })
-  }
-  else if (url.split('?')[0] === '/create') {
-    if  (method === 'GET') {
-      return Database.addTweets({tweets: [queryObj]})
-      .then(() => Utils.redirectHomeResponse())
-    }
-  }
-  else if (idNumber) {
-    if  (!queryObj && method === 'GET') {
-      return Database.getTweetById(idNumber)
-      .then((data) => Templates.renderSinglePage(data.tweets[0], 'Get Single'))
-    }
-    else if (queryObj.delete && method === 'GET') {
-      return Database.deleteUpdateTweet(idNumber)
-      .then(() => Utils.redirectHomeResponse())
-    }
-    else if (queryObj.update && method === 'GET') {
-      if (queryObj.user || queryObj.tweet) {
-        const tweetObj = Object.assign({}, queryObj, {id: idString})
-        return Database.updateTweets(tweetObj)
-        .then(() => Utils.redirectHomeResponse())
-      }
-    }
-  }
-  return Promise.reject('Bad Request')
+Handlers.apiUpdateEndpoint = (req, reply) => {
+  console.log('api apdate')
+  const { payload, params } = req
+  console.log(payload, params.id)
+  return Database.updateTweets(payload, params.id)
+  .then(reply)
+  .catch((err) => reply('Opps ' + err))
 }
 
-Handlers.requestCheckEndpoint = (req) => {
-  if (req.url.split('/')[1] === 'api') {
-    console.log('DO API related operations here')
-    return apiEndpointHandle(req)
-  } else {
-    console.log('DO "/" related operations here')
-    return rootEndpointHandle(req)
+Handlers.apiCreateEndpoint = (req, reply) => {
+  console.log('api create')
+  const { payload, params } = req
+  return Database.addTweets(payload)
+  .then(reply)
+  .catch((err) => reply('Opps ' + err))
+}
+
+Handlers.apiTweetsEndpoint = (req, reply) => {
+  return Database.getTweets()
+  .then(reply)
+  .catch((err) => reply('Opps ' + err))
+}
+
+Handlers.rootEndpoint = (req, reply) => {
+  return Database.getTweets()
+  .then(tweets => reply.view('tweets', tweets))
+  .catch((err) => reply('Opps ' + err))
+}
+
+Handlers.createEndpoint = (req, reply) => {
+  console.log(req.query)
+  return Database.addTweets({tweets: [req.query]})
+  .then(reply.redirect('/'))
+  .catch((err) => reply('Opps ' + err))
+}
+
+Handlers.idEndpoint = (req, reply) => {
+  const { search, query, path} = req.url
+  const { id } = req.params
+  //console.log( !search, query, path, {search})
+  if (!search) {
+    return Database.getTweetById(id)
+    .then((tweet) => reply.view('single', tweet))
+    .catch((err) => reply('Opps ' + err))
   }
+  else {
+    if (query.delete) {
+      return Database.deleteUpdateTweet(id)
+      .then(reply.redirect('/'))
+      .catch((err) => reply('Opps '+ err))
+    }
+    else if (query.update)
+      if(!(query.user || query.tweet)) reply('Please input the data')
+      else {
+        Database.updateTweets(query, id)
+        reply.redirect('/')
+      }
+    }
 }
