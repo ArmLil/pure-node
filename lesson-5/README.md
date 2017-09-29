@@ -41,3 +41,7 @@ https://hapijs.com/tutorials/views
 Lesson 5 continued use
 https://developer.mozilla.org/en-US/docs/AJAX/Getting_Started
 https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Using_XMLHttpRequest
+
+
+- [ ] added xhr create /api/tweet POST
+- [ ] when create is completed, you have to update the tweets, which means you need to run a loadTweets function, that will pull again from the api
