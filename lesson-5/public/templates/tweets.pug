@@ -2,38 +2,20 @@ html
   body
    div
     h3(style={margin: 30}) Home Page
-    form#new-tweet(action='/create' method='POST')
+    form#new-tweet
       fieldset
         legend New Tweet
         div
           <br />
           label(for='user') Username: &nbsp;
-          input(name='user', type='text', placeholder=' your username', required='', autofocus='' value="vachi")
+          input(id=inputUsername name='user', type='text', placeholder=' your username', required='', autofocus='' )
         div
           <br />
           label(for='tweet') tweet: &nbsp;
-          input(name='tweet', type='text', required='', autofocus='')
+          input(id=inputTweet name='tweet', type='text', required='', autofocus='')
         div
           <br /> &nbsp;
-          button Create
-    ul
-      h4 Tweets <br />
-      each tweet in tweets
-        li
-          form.update-tweet(action='/update/'+tweet.id method='POST')
-            label(for='user' style={color: tweet.colour}) Username: &nbsp #{tweet.user} &nbsp
-            input(name='user', type='text', placeholder=' update username', autofocus='', value=tweet.user)
-            <br /><br />
-            label(for='tweet' style={color: tweet.colour}) tweet: #{tweet.tweet} &nbsp;
-            input(name='tweet', type='text', placeholder=' update tweet', autofocus='', value=tweet.tweet)
-            <br /><br />
-            button Update
-          a(href=tweet.id style={color: tweet.colour})  id: #{tweet.id} <br /> <br />
-          form.delete-tweet(action='/delete/'+tweet.id method='GET')
-            button Delete
-          <br /><br />
-      else
-        li There are no tweets
-    
+          button(id='create') Create
+    ul(id='users')
+
     | <script type="text/javascript" src="/js/tweets.js"></script>
-    
