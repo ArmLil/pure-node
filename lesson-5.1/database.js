@@ -57,8 +57,9 @@ Database.addTweets = (tweetsArr) => {
   })
 }
 
-Database.updateTweets = (user, tweet, id) => {
-  const query = `UPDATE ${DB.tableName} SET user = '${user}', tweet = '${tweet}'  WHERE id = ${id}`
+Database.updateTweets = (payload, id) => {
+  console.log('database updateTweets',payload, id)
+  const query = `UPDATE ${DB.tableName} SET user = '${payload.user}', tweet = '${payload.tweet}'  WHERE id = ${id}`
 
   return new Promise((resolve, reject) => {
     Database.sql.run(query, (err) => {

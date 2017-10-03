@@ -42,6 +42,7 @@ server.register([
     })
 
     server.start((error) => {
+      console.log('server started')
       if(error) console.error(error)
       console.log('server started on', server.info.uri)
     })

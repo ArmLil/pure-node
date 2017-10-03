@@ -1,6 +1,6 @@
 'use strict'
 
-function loadTweets(){
+const loadTweets = () => {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', '/api/tweets', true)
 
@@ -10,21 +10,20 @@ function loadTweets(){
       let output = '<h4>Tweets</h4>'
       if(tweets.tweets) {
         tweets.tweets.map(tweet => {
+          //const tweetStr = JSON.stringify(tweet)
+          console.log(tweet)
           output += `
           <li>
-            <form class="update-tweet" action=/update/${tweet.id} method="POST">
-              <label for="user" style="color: ${tweet.colour}"> Username: &nbsp ${tweet.user} &nbsp</label>
-              <input name="user" type="text" placeholder=" update username" autofocus="" value="${tweet.user}">
-              <br><br>
-              <label for="tweet" style="color: ${tweet.colour}"> tweet: &nbsp ${tweet.tweet} &nbsp</label>
-              <input name="tweet" type="text" placeholder=" update username" autofocus="" value="${tweet.tweet}">
-              <br><br>
-              <button id="update"> Update </button>
-            </form>
-            <a href="${tweet.id}" style="color:${tweet.colour}">id: ${tweet.id} <br> </a>
-            <form class="delete-tweet" action=/delete/${tweet.id} method="GET">
-              <button id="delete">Delete</button>
-            </form>
+            <label for="user" style="color: ${tweet.colour}"> Username: &nbsp ${tweet.user} &nbsp</label>
+            <input id=tweet${tweet.id}name="user" type="text" placeholder=" update username" autofocus="" >
+            <br><br>
+            <label for="tweet" style="color:${tweet.colour}"> tweet: &nbsp ${tweet.tweet} &nbsp</label>
+            <input id=user${tweet.id} name="tweet" type="text" placeholder=" update username" autofocus="">
+            <br><br>
+            <button onClick="loadUpdate('${tweet.id}')"> Update </button>
+            <a id="href" name="${tweet.id}" href="${tweet.id}" style="color:${tweet.colour}">id: ${tweet.id} <br> </a>
+            <br>
+            <button onClick="loadDelete(${tweet.id})">Delete</button>
             <br><br>
           </li>`;
         })
@@ -35,12 +34,11 @@ function loadTweets(){
   }
   xhr.send()
 }
-// Init
+
 loadTweets()
+/////////////////////////////////////////////////////////////////////////////
 
 document.getElementById('create').addEventListener('click', loadCreate)
-
-
 function loadCreate(event){
   event.preventDefault()
   const inputUsername = document.getElementById('inputUsername').value;
@@ -56,14 +54,43 @@ function loadCreate(event){
     loadTweets()
     console.log(this.responseText);
   }
-
   xhr.send(params); // this build out the post request query
 }
 
-function loadUpdate(){
-  console.log('clicked update button')
+///////////////////////////////////////////////////////////////////////////
+
+
+const loadUpdate = (id) => {
+  console.log('clicked update button',id, event.target)
+  // const params = `user=${user}&tweet=${tweet}`;
+  // console.log('params=', params, 'id=', id)
+  //
+  // const xhr = new XMLHttpRequest();
+  // xhr.open('PUT', `/api/tweets/${id}`, true);
+  // xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  //
+  // xhr.onload = function(){
+  //   loadTweets()
+  //   console.log(this.responseText);
+  // }
+  //
+  // xhr.send(params); // this build out the post request query
 }
 
-function loadDelete(){
+//////////////////////////////////////////////////////////////////////////
+
+const loadDelete = (id) => {
   console.log('clicked delete button')
+  event.preventDefault()
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('DELETE', `/api/tweets/${id}`, true);
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+  xhr.onload = function(){
+    console.log(this.responseText);
+    loadTweets()
+  }
+
+  xhr.send(id); // this build out the post request query
 }

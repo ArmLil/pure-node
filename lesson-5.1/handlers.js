@@ -29,7 +29,7 @@ Handlers.apiGetByIdEndpoint = (req, reply) => {
 Handlers.apiUpdateEndpoint = (req, reply) => {
   console.log('api apdate')
   const { payload, params } = req
-  console.log(payload, params.id)
+  console.log('payload',payload, 'id',params.id)
   return Database.updateTweets(payload, params.id)
   .then(reply)
   .catch((err) => reply('Opps ' + err))
@@ -37,7 +37,7 @@ Handlers.apiUpdateEndpoint = (req, reply) => {
 
 Handlers.apiCreateEndpoint = (req, reply) => {
   console.log('api create')
-  const { payload, params } = req
+  const { payload } = req
   return Database.addTweets(payload)
   .then(reply)
   .catch((err) => reply('Opps ' + err))
