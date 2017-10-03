@@ -10,26 +10,31 @@ const loadTweets = () => {
       let output = '<h4>Tweets</h4>'
       if(tweets.tweets) {
         tweets.tweets.map(tweet => {
-          //const tweetStr = JSON.stringify(tweet)
-          console.log(tweet)
           output += `
           <li>
-            <label for="user" style="color: ${tweet.colour}"> Username: &nbsp ${tweet.user} &nbsp</label>
-            <input id=tweet${tweet.id}name="user" type="text" placeholder=" update username" autofocus="" >
-            <br><br>
-            <label for="tweet" style="color:${tweet.colour}"> tweet: &nbsp ${tweet.tweet} &nbsp</label>
-            <input id=user${tweet.id} name="tweet" type="text" placeholder=" update username" autofocus="">
-            <br><br>
-            <button onClick="loadUpdate('${tweet.id}')"> Update </button>
-            <a id="href" name="${tweet.id}" href="${tweet.id}" style="color:${tweet.colour}">id: ${tweet.id} <br> </a>
-            <br>
-            <button onClick="loadDelete(${tweet.id})">Delete</button>
-            <br><br>
+            <form id=tweet-${tweet.id}>
+              <label for="user" style="color: ${tweet.colour}"> username: &nbsp ${tweet.user} &nbsp</label>
+              <input name="user" type="text" placeholder="update username" autofocus="" >
+
+              <label for="tweet" style="color:${tweet.colour}"> tweet: &nbsp ${tweet.tweet} &nbsp</label>
+              <input name="tweet" type="text" placeholder="update tweet" autofocus="">
+
+              <button class="tweetUpdate">Update</button>
+              <a name="${tweet.id}" href="${tweet.id}" style="color:${tweet.colour}">id: ${tweet.id} <br> </a>
+
+            </form>
+            <button onclick="loadDelete(${tweet.id})">Delete</button>
           </li>`;
         })
       }
       const usersList = document.getElementById("users")
-      users.innerHTML = output
+      users.innerHTML = output // after this point that means the ouput is in the DOM
+
+      // load an array with the items
+      let tweetsArr = document.getElementsByClassName('tweetUpdate')
+      for (let i = 0; i < tweetsArr.length; i++){
+          tweetsArr[i].addEventListener('click', loadUpdate)
+      }
     }
   }
   xhr.send()
@@ -41,10 +46,11 @@ loadTweets()
 document.getElementById('create').addEventListener('click', loadCreate)
 function loadCreate(event){
   event.preventDefault()
-  const inputUsername = document.getElementById('inputUsername').value;
-  const inputTweet = document.getElementById('inputTweet').value;
+  let inputUsername = document.getElementById('inputUsername')
+  inputUsername = inputUsername ? inputUsername.value : ''
+  let inputTweet = document.getElementById('inputTweet')
+  inputTweet = inputTweet ? inputTweet.value : ''
   const params = `user=${inputUsername}&tweet=${inputTweet}`;
-  console.log(params)
 
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/api/tweets', true);
@@ -59,22 +65,28 @@ function loadCreate(event){
 
 ///////////////////////////////////////////////////////////////////////////
 
+function loadUpdate(event){
+  event.preventDefault()
+  let id = event.target.parentElement.id
+  id = id ? id.split('-')[1] : null
+  let user = event.target.parentElement.querySelector('input[name="user"]')
+  let tweet = event.target.parentElement.querySelector('input[name="tweet"]')
+  user = user ? user.value : ''
+  tweet = tweet ? tweet.value : ''
 
-const loadUpdate = (id) => {
-  console.log('clicked update button',id, event.target)
-  // const params = `user=${user}&tweet=${tweet}`;
-  // console.log('params=', params, 'id=', id)
-  //
-  // const xhr = new XMLHttpRequest();
-  // xhr.open('PUT', `/api/tweets/${id}`, true);
-  // xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  //
-  // xhr.onload = function(){
-  //   loadTweets()
-  //   console.log(this.responseText);
-  // }
-  //
-  // xhr.send(params); // this build out the post request query
+  if(!id) return window.alert('no id')
+
+  const params = `user=${user}&tweet=${tweet}`;
+  const xhr = new XMLHttpRequest();
+  xhr.open('PUT', `/api/tweets/${id}`, true);
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+  xhr.onload = function(){
+    loadTweets()
+    console.log(this.responseText);
+  }
+
+  xhr.send(params); // this build out the post request query
 }
 
 //////////////////////////////////////////////////////////////////////////
