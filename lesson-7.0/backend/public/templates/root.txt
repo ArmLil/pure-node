@@ -1,0 +1,11 @@
+***API***
+
+/api/tweets GET
+
+/api/tweets POST
+
+/api/tweets/{id} PUT
+
+/api/tweets/{id} DELETE
+
+/api/tweets/{id} GET > single tweet
