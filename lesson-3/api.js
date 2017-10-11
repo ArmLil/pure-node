@@ -110,19 +110,19 @@ const updateTweet = (newTweet, path) => {
 
 const deleteTweet = (id, path) => {
   return readFile(path)
-    .then((data) => {
-      let tweetsArray = []
-      if(data) tweetsArray = JSON.parse(data).tweets
-      tweetsArray = tweetsArray.map(tweet => {
-        if(tweet.id === id) {
-          return null
-        }
-        return tweet
-      })
-      const newTweetsObject = {tweets: tweetsArray.filter(n => n)}
-      const result = JSON.stringify(newTweetsObject, null, '\t')
-      return writeFile(path, result)
+  .then((data) => {
+    let tweetsArray = []
+    if(data) tweetsArray = JSON.parse(data).tweets
+    tweetsArray = tweetsArray.map(tweet => {
+      if(tweet.id === id) {
+        return null
+      }
+      return tweet
     })
+    const newTweetsObject = {tweets: tweetsArray.filter(n => n)}
+    const result = JSON.stringify(newTweetsObject, null, '\t')
+    return writeFile(path, result)
+  })
 }
 
 const getQueryId = (url) => {

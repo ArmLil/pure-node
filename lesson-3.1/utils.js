@@ -35,7 +35,7 @@ Utils.getBodyObj = (req) => {
 
 Utils.findTweetById = (id, tweetsArray) => {
   let result = null
-  tweetsArray.map(oldTweet => {
+  tweetsArray.forEach(oldTweet => {
     if (id === oldTweet.id) {
        result = oldTweet
     }

@@ -20,7 +20,7 @@ const sqlite = new sqlite3.Database('tweets.db', (err) => {
 //creates table if db or table not exist
 sqlite.run(DB.createTable)
 
-const segmentsNumber = (offset, limit) => {
+Database.segmentsNumber = (offset, limit) => {
   console.log('segmentsNumber')
   return Database.countTweets()
   .then((result) => {
@@ -36,7 +36,7 @@ const segmentsNumber = (offset, limit) => {
 Database.getTweets = (offset, limit) => {
   console.log('Database.getTweets', offset, limit)
   //offset=`${offset === 0 ? 1 : offset * limit}`
-  segmentsNumber(offset, limit)
+  //segmentsNumber(offset, limit)
   return new Promise((resolve, reject) => {
     sqlite.all(DB.selectTweets(offset, limit), (err, result) => {
       if(err) return reject(MESSAGES.readFile.error+err.message)
@@ -91,7 +91,7 @@ Database.countTweets = () => {
   return new Promise((resolve, reject) => {
     sqlite.get(DB.count(), (err, result) => {
       if(err) return reject('count err', err)
-      return resolve(result)
+      return resolve(result.count)
     })
   })
 }

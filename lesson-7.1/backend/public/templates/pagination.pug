@@ -1,0 +1,61 @@
+html
+    head
+        style.
+            .pagination {
+            display: inline-block;
+            }
+            .pagination a {
+            color: black;
+            float: left;
+            padding: 8px 16px;
+            text-decoration: none;
+            }
+            .pagination a.active {
+            background-color: rgb(133, 138, 250);
+            color: white;
+            }
+            .pagination a:hover:not(.active) {background-color: #ddd;}
+    body
+        div
+           h3(style={margin: 30}) Home Page
+           form#new-tweet(action='/create' method='POST')
+              fieldset
+                  legend New Tweet
+                  div(style={padding: 3})
+                      label(for='user') Username: &nbsp;
+                      input(style={margin: 3} id='inputUsername' name='user', type='text', placeholder=' your username', required='', autofocus='' )
+                  div(style={padding: 3})
+                      label(for='tweet') tweet: &nbsp;
+                      input(style={margin: 3} id='inputTweet' name='tweet', type='text', required='', autofocus='')
+                  div(style={padding: 3})
+                      button(id='create') Create
+        ul#users
+            h4 Tweets
+            each tweet in tweets
+              li
+                form.update-tweet(id=tweet-tweet.id action='/update/'+tweet.id method='POST')
+                  div.form-group
+                    label(for='user' style={color: tweet.colour}) Username: &nbsp; #{tweet.user} &nbsp;
+                    input(style={margin: 3} name='user', type='text', placeholder=' update username', required='', autofocus='')
+                  div.form-group
+                    label(for='tweet' style={color: tweet.colour}) tweet: #{tweet.tweet} &nbsp;
+                    input(style={margin: 3} name='tweet', type='text', placeholder=' update tweet', required='', autofocus='')
+                  button Update
+                div(style={padding: '5px'})
+                  a(href=tweet.id style={color: tweet.colour})  id: #{tweet.id} br
+                form.delete-tweet(action='/delete/'+tweet.id method='POST')
+                  button Delete
+                br
+            else
+              li There are no tweets
+        h4 Pagination
+        .pagination
+            -var k = offset
+            while k <= count
+                 a(href="#") «
+                 -var n = k
+                 while n < limit + k
+                     a(href="#") #{n}
+                     - if (n++ === count) break
+                 a(href="#") »
+                 - k += limit

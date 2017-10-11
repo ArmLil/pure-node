@@ -13,23 +13,22 @@ html
           input(style={margin: 3} id='inputTweet' name='tweet', type='text', required='', autofocus='')
         div(style={padding: 3})
           button(id='create') Create
-    ul#users
+    ul(id='users')
       h4 Tweets
       each tweet in tweets
         li
           form.update-tweet(id=tweet-tweet.id action='/update/'+tweet.id method='POST')
             div.form-group
-              label(for='user' style={color: tweet.colour}) Username: &nbsp #{tweet.user} &nbsp
-              input(style={margin: 3} name='user', type='text', placeholder=' update username', autofocus='')
+              label(for='user' style={color: tweet.colour}) Username: &nbsp; #{tweet.user} &nbsp;
+              input(style={margin: 3} name='user', type='text', placeholder=' update username', required='', autofocus='')
             div.form-group
               label(for='tweet' style={color: tweet.colour}) tweet: #{tweet.tweet} &nbsp;
-              input(style={margin: 3} name='tweet', type='text', placeholder=' update tweet', autofocus='')
+              input(style={margin: 3} name='tweet', type='text', placeholder=' update tweet', required='', autofocus='')
             button Update
-          a(href=tweet.id style={color: tweet.colour})  id: #{tweet.id} br
+          div(style={padding: '5px'})
+            a(href=tweet.id style={color: tweet.colour})  id: #{tweet.id} br
           form.delete-tweet(action='/delete/'+tweet.id method='POST')
             button Delete
           br
       else
         li There are no tweets
-
-    | <script type="text/javascript" src="/js/tweets.js"></script>

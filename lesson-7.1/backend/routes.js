@@ -3,11 +3,8 @@ const Database = require('./database')
 const Handlers = require('./handlers')
 const Utils = require('./utils')
 
-const FAVICON = './public/tweets.pug'
-
 const Routes = []
 module.exports = Routes
-
 
 Routes.push({
   method: 'GET',
@@ -30,6 +27,23 @@ Routes.push({
       query: {
         offset: Joi.number().min(0).default(0),
         limit: Joi.number().min(1).max(20).default(10)
+      }
+    },
+    description: 'This loads the homepage',
+    notes: 'We worked very hard on this endpoint, ha ha!!!',
+    tags : ['api']
+  }
+})
+
+Routes.push({
+  method: 'GET',
+  path: '/paginate',
+  handler: Handlers.apiTweetsPaginateEndpoint,
+  config: {
+    validate: {
+      query: {
+        offset: Joi.number().min(0).default(0),
+        limit: Joi.number().min(1).max(50).default(10)
       }
     },
     description: 'This loads the homepage',
@@ -111,7 +125,7 @@ Routes.push({
     validate: {
       query: {
         offset: Joi.number().min(0).default(0),
-        limit: Joi.number().min(1).max(20).default(10)
+        limit: Joi.number().min(1).max(50).default(10)
       }
     },
     description: 'This loads the homepage',
@@ -119,20 +133,20 @@ Routes.push({
   }
 })
 
-Routes.push({
-  method: 'GET',
-  path: '/{id}',
-  handler: Handlers.getByIdEndpoint,
-  config: {
-    validate: {
-      params: {
-        id: Joi.string().required()
-      }
-    },
-    description: 'This loads single tweet',
-    tags : ['template']
-  }
-})
+// Routes.push({
+//   method: 'GET',
+//   path: '/{id}',
+//   handler: Handlers.getByIdEndpoint,
+//   config: {
+//     validate: {
+//       params: {
+//         id: Joi.string().required()
+//       }
+//     },
+//     description: 'This loads single tweet',
+//     tags : ['template']
+//   }
+// })
 
 Routes.push({
   method: 'POST',
