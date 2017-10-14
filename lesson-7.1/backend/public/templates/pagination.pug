@@ -5,9 +5,11 @@ html
             display: inline-block;
             }
             .pagination a {
+            width: 25px;
+            text-align: center;
             color: black;
             float: left;
-            padding: 8px 16px;
+            padding: 6px 14px;
             text-decoration: none;
             }
             .pagination a.active {
@@ -50,12 +52,25 @@ html
               li There are no tweets
         h4 Pagination
         .pagination
-            -var k = offset
-            while k <= count
-                 a(href="#") «
-                 -var n = k
-                 while n < limit + k
-                     a(href="#") #{n}
-                     - if (n++ === count) break
-                 a(href="#") »
-                 - k += limit
+               -var back = segment, forth = segment
+               -var k = (segment-1)*10 + 1
+               -var n = (k + 10 <= pages ? k + 10 : pages +1)
+               -var offsetLocal = (k - 1) * limit
+               -var b = offset-limit*10
+               - console.log({offset}, {offsetLocal}, {k}, {n})
+               if (segment === 1)
+                a «
+               else
+                a(href='/search?segment='+ --back +'&offset='+b+'&limit='+limit) «
+               - for (var i = k; i < n; ++i)
+                   - //console.log(offsetLocal, limit, k, n)
+                   if (offset === offsetLocal)
+                    a.active(href='/search?segment='+segment+'&offset='+offsetLocal+'&limit='+limit) #{k++}
+                   else
+                    a(href='/search?segment='+segment+'&offset='+offsetLocal+'&limit='+limit) #{k++}
+                   - offsetLocal = limit * i
+               - console.log(k + 10)
+               if (k > pages)
+                a »
+               else
+                a(href='/search?segment='+ ++forth +'&offset='+offsetLocal+'&limit='+limit) »

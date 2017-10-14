@@ -28,14 +28,15 @@ Utils.handleBoom = (err) => {
   return error;
 }
 
-Utils.getPaginationObj = (offset, limit, count) => {
-  const segments = Math.ceil((count - offset)/limit)
+Utils.getPaginationObj = (segment, offset, limit, count) => {
+  const pages = Math.ceil(count/limit)
   const pagination = Object.assign(
     {},
+    {segment},
     {offset},
     {limit},
     {count},
-    {segments}
+    {pages}
   )
   return pagination
 }

@@ -9,7 +9,7 @@ Utils.getQueryObj = (url) => {
   params = params.split('&')
   let obj = {}
   let queryObj = {}
-  params.map(param => {
+  params.forEach(param => {
     const clean = param.split('=')
     if (!clean[1]) return
     const value = clean[1].replace(/\+/g, ' ')
@@ -79,7 +79,7 @@ Utils.processTweet = (tweet) => {
 
 const IsUnicId = (id, tweets) => {
   let idIsUnic = true
-  tweets.map(tweet => {
+  tweets.forEach(tweet => {
     if (tweet.id === id) {
       idIsUnic = false
       return

@@ -45,12 +45,16 @@ module.exports = {
    },
 
    deleteUpdate: (id) => {
-     return `UPDATE ${TABLE_NAME}
+     return `
+     UPDATE ${TABLE_NAME}
      SET deleted_at = '${Utils.dbDate()}'
      WHERE id = ${id}`
    },
 
    count: () => {
-     return `SELECT COUNT(*) AS count FROM ${TABLE_NAME}`
+     return `
+     SELECT COUNT(*) AS count
+     FROM ${TABLE_NAME}
+     WHERE deleted_at IS NULL`
    },
 }

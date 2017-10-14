@@ -35,8 +35,6 @@ Database.segmentsNumber = (offset, limit) => {
 
 Database.getTweets = (offset, limit) => {
   console.log('Database.getTweets', offset, limit)
-  //offset=`${offset === 0 ? 1 : offset * limit}`
-  //segmentsNumber(offset, limit)
   return new Promise((resolve, reject) => {
     sqlite.all(DB.selectTweets(offset, limit), (err, result) => {
       if(err) return reject(MESSAGES.readFile.error+err.message)

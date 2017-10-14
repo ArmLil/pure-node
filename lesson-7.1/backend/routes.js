@@ -37,13 +37,14 @@ Routes.push({
 
 Routes.push({
   method: 'GET',
-  path: '/paginate',
-  handler: Handlers.apiTweetsPaginateEndpoint,
+  path: '/search',
+  handler: Handlers.apiSearchEndpoint,
   config: {
     validate: {
       query: {
         offset: Joi.number().min(0).default(0),
-        limit: Joi.number().min(1).max(50).default(10)
+        limit: Joi.number().min(1).max(50).default(5),
+        segment: Joi.number().min(1).default(1),
       }
     },
     description: 'This loads the homepage',
@@ -122,31 +123,25 @@ Routes.push({
   path: '/',
   handler: Handlers.rootEndpoint,
   config: {
-    validate: {
-      query: {
-        offset: Joi.number().min(0).default(0),
-        limit: Joi.number().min(1).max(50).default(10)
-      }
-    },
     description: 'This loads the homepage',
     tags : ['template']
   }
 })
 
-// Routes.push({
-//   method: 'GET',
-//   path: '/{id}',
-//   handler: Handlers.getByIdEndpoint,
-//   config: {
-//     validate: {
-//       params: {
-//         id: Joi.string().required()
-//       }
-//     },
-//     description: 'This loads single tweet',
-//     tags : ['template']
-//   }
-// })
+Routes.push({
+  method: 'GET',
+  path: '/search/{id}',
+  handler: Handlers.getByIdEndpoint,
+  config: {
+    validate: {
+      params: {
+        id: Joi.string().required()
+      }
+    },
+    description: 'This loads single tweet',
+    tags : ['template']
+  }
+})
 
 Routes.push({
   method: 'POST',

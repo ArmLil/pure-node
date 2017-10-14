@@ -22,7 +22,6 @@ Templates.renderHomePage = (tweets, message) => {
 }
 
 Templates.renderSinglePage = (tweet, message) => {
-  console.log('........tw', tweet)
   return Promise.resolve(Object.assign({}, {
     body: pug.renderFile(SINGLE_TEMPLATE, tweet)
   }, {
