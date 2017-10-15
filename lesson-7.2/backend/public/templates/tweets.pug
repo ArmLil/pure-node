@@ -1,0 +1,90 @@
+html
+    head
+        style.
+            .pagination {
+            display: inline-block;
+            }
+            .pagination a {
+            width: 25px;
+            text-align: center;
+            color: black;
+            float: left;
+            padding: 6px 14px;
+            text-decoration: none;
+            }
+            .pagination a.active {
+            background-color: rgb(133, 138, 250);
+            color: white;
+            }
+            .pagination a:hover:not(.active) {background-color: #ddd;}
+    body
+        div
+           h3(style={margin: 30}) Home Page
+           form#new-tweet(action='/create' method='POST')
+              fieldset
+                  legend New Tweet
+                  div(style={padding: 3})
+                      label(for='user') Username: &nbsp;
+                      input(style={margin: 3} id='inputUsername' name='user', type='text', placeholder=' your username', required='', autofocus='' )
+                  div(style={padding: 3})
+                      label(for='tweet') tweet: &nbsp;
+                      input(style={margin: 3} id='inputTweet' name='tweet', type='text', required='', autofocus='')
+                  div(style={padding: 3})
+                      button(id='create') Create
+        ul#users
+            h4 Tweets
+            each tweet in tweets
+              li
+                form.update-tweet(id=tweet-tweet.id action='/update/'+tweet.id method='POST')
+                  div.form-group
+                    label(for='user' style={color: tweet.colour}) Username: &nbsp; #{tweet.user} &nbsp;
+                    input(style={margin: 3} name='user', type='text', placeholder=' update username', required='', autofocus='')
+                  div.form-group
+                    label(for='tweet' style={color: tweet.colour}) tweet: #{tweet.tweet} &nbsp;
+                    input(style={margin: 3} name='tweet', type='text', placeholder=' update tweet', required='', autofocus='')
+                  button Update
+                div(style={padding: '5px'})
+                  a(href=tweet.id style={color: tweet.colour})  id: #{tweet.id} br
+                form.delete-tweet(action='/delete/'+tweet.id method='POST')
+                  button Delete
+                br
+            else
+              li There are no tweets
+        h4 Pagination
+        .pagination
+            -const url = (_offset ) => '/search?offset='+_offset+'&limit='+limit
+
+            -const range = Math.floor(offset/(limit*10))
+            -const pages = Math.ceil(count/limit)
+
+            -const stepBack = offset-limit, stepForth = offset+limit
+            -const k = range * 10 + 1
+            -const n = k + 10 <= pages ? k + 10 : pages + 1
+            -console.log({range}, {pages}, {k}, {n})
+
+            if (range === 0)
+              a <<
+            else
+              a(href=url((range-1)*limit*10)) <<
+
+            if (offset === 0)
+              a «
+            else
+              a(href=url(stepBack)) «
+
+            -for (let i = k; i < n; ++i)
+              -const offsetLocal = (i - 1) * limit
+              if (offset === offsetLocal)
+                a.active(href=url(offsetLocal)) #{i}
+              else
+                a(href=url(offsetLocal)) #{i}
+
+            if (offset + limit > count)
+              a »
+            else
+              a(href=url(stepForth)) »
+
+            if ((n + 1)*limit > count)
+              a >>
+            else
+              a(href=url((range+1)*limit*10)) >>
