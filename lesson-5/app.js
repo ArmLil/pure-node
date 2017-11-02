@@ -4,7 +4,6 @@ const HapiSwagger = require('hapi-swagger')
 const Inert = require('inert')
 const Vision = require('vision')
 
-const Handlers = require('./handlers')
 const server = new Hapi.Server()
 
 const Pack = require('./package')

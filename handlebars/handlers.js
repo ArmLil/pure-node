@@ -84,10 +84,11 @@ const rootEndpointHandle = (req) => {
   const idNumber = Utils.filterInt(idString)
   const queryObj = Utils.getQueryObj(url)
   if (url === '/') {
+    let tweetsObj
     return Database.tweets()
     .then(tweets => {
-      if (!tweets) tweets = {tweets:[]}
-      tweets = JSON.parse(tweets)
+      if (!tweets) tweetsObj = {tweets:[]}
+      tweetsObj = JSON.parse(tweets)
       return Templates.renderHomePage(tweets, 'Get HomePage')
     })
   }
@@ -119,7 +120,6 @@ const rootEndpointHandle = (req) => {
 }
 
 Handlers.requestCheckEndpoint = (req) => {
-  
   if (req.url.split('/')[1] === 'api') {
     console.log('DO API related operations here')
     return apiEndpointHandle(req)

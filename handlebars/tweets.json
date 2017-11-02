@@ -1,0 +1,30 @@
+{
+	"tweets": [
+		{
+			"user": "Dasha",
+			"tweet": "I am a doctor",
+			"id": "150592626866035",
+			"colour": "rgb(34, 0, 54)",
+			"update": "Update"
+		},
+		{
+			"user": "Margo",
+			"tweet": "I am s student",
+			"create": "Create",
+			"id": "1506429916630",
+			"colour": "rgb(95, 0, 23)"
+		},
+		{
+			"user": "Ashot1",
+			"tweet": "Freedom",
+			"id": "15059265120364",
+			"color": "rgb(64, 0, 127)"
+		},
+		{
+			"user": "Jane1",
+			"tweet": "wow",
+			"id": "15059268834735",
+			"color": "rgb(245, 0, 90)"
+		}
+	]
+}

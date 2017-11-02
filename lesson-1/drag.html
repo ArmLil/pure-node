@@ -1,0 +1,142 @@
+
+<!doctype html>
+<html>
+<head>
+   <meta charset="UTF-8">
+   <title>Tree</title>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/javascript">
+const allowDrop = (ev) => {
+  ev.preventDefault();
+}
+const drag = (ev) => {
+    ev.dataTransfer.setData("id", ev.target.id)
+}
+const drop = (ev) => {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("id")
+    if (ev.target != document.getElementById(data).children[1] && //dragged item and destination item are not same
+    !document.getElementById(data).children[1].parentElement.contains(ev.target)) { //destination item does not contain dragged item
+      ev.target.parentElement.appendChild(document.getElementById(data))
+    }
+    ev.target.style.border = '1px solid white'
+    reRender()
+}
+const reRender = () => {
+  var allDivs = container.getElementsByTagName("div");
+  for (var i = 0; i < allDivs.length; i++) {
+    if(allDivs[i].hasAttribute("draggable")){
+      //update indentation (tabulation)
+      let storeItem = allDivs[i]
+      let level = 1
+      while(storeItem.parentElement) {
+        if(storeItem.parentElement.hasAttribute("draggable")){
+          level++
+        }
+        storeItem = storeItem.parentElement
+      }
+      levelString = level*30 + 'px'
+      allDivs[i].children[0].style.textIndent = levelString
+      //update number of tree element (e.g. 1.2.1)
+      let element = allDivs[i]
+      let elementNumber = 0
+      while (element.previousSibling){
+        element = element.previousSibling
+        elementNumber++
+      }
+      if (allDivs[i].parentElement.hasAttribute("draggable")){
+        allDivs[i].setAttribute('leafNumber', allDivs[i].parentElement.getAttribute("leafNumber") + '.' + (elementNumber - 1))
+        allDivs[i].children[1].innerHTML = '&nbspTREE ELEMENT ' + allDivs[i].parentElement.getAttribute("leafNumber") + '.' + (elementNumber - 1)
+      } else {
+        allDivs[i].setAttribute('leafNumber', (elementNumber - 1))
+        allDivs[i].children[1].innerHTML = '&nbspTREE ELEMENT ' + (elementNumber - 1)
+      }
+    }
+  }
+}
+const createNode = (level) => {
+  const symbolSpan = document.createElement('span');
+  symbolSpan.innerHTML = '-'
+  symbolSpan.style.float = 'left'
+  symbolSpan.setAttribute('level', level)
+  levelString = level*30 + 'px'
+  symbolSpan.style.textIndent = levelString
+  symbolSpan.addEventListener('click', () => {
+    event.target.innerHTML = event.target.innerHTML == '+' ? '-' : '+'
+    let nextSibling = event.target.nextElementSibling.nextElementSibling
+    while(nextSibling){
+        if (nextSibling.style.display == "block") {
+            nextSibling.style.display = "none";
+        } else {
+            nextSibling.style.display = "block";
+        }
+        nextSibling = nextSibling.nextElementSibling
+    }
+  })
+  const textDiv = document.createElement('div');
+  textDiv.style.backgroundColor = 'white'
+  textDiv.addEventListener('click', () => {
+    event.target.style.backgroundColor = event.target.style.backgroundColor == 'white' ? 'lightblue' : 'white'
+  })
+  const sectionDiv = document.createElement('div');
+  sectionDiv.style.display = 'block'
+  sectionDiv.style.fontSize = 'x-large'
+  sectionDiv.appendChild(symbolSpan)
+  sectionDiv.appendChild(textDiv)
+  sectionDiv.setAttribute('draggable', true)
+  sectionDiv.setAttribute('ondragstart', 'drag(event)')
+  sectionDiv.setAttribute('ondrop', 'drop(event)')
+  sectionDiv.setAttribute('ondragover', 'allowDrop(event)')
+  sectionDiv.setAttribute('id', Math.floor(Math.random() * 999999999))
+  sectionDiv.addEventListener("dragenter", (event) => {
+    event.target.style.border = '1px dashed blue'
+  }, false);
+  sectionDiv.addEventListener("dragleave", (event) => {
+    event.target.style.border = '1px solid white'
+  }, false);
+  return sectionDiv
+}
+const container = document.getElementById("root");
+const addChildButton = document.createElement('button');
+addChildButton.innerHTML = 'Add Child';
+addChildButton.addEventListener('click', () => {
+  var allDivs = document.getElementsByTagName('div');
+  for (var i = 0; i < allDivs.length; i++)       {
+    if (allDivs[i].style.backgroundColor == 'lightblue') {
+      if(allDivs[i].previousSibling.innerHTML === '+') allDivs[i].previousSibling.click()
+      allDivs[i].parentElement.appendChild(createNode(parseInt(allDivs[i].previousSibling.getAttribute('level')) + 1))
+    }
+  }
+  reRender()
+})
+const removeElementButton = document.createElement('button');
+removeElementButton.innerHTML = 'Remove Element'
+removeElementButton.addEventListener('click', () => {
+  var allDivs = document.getElementsByTagName('div');
+  for (var i = 0; i < allDivs.length; i++){
+    if (allDivs[i].style.backgroundColor == 'lightblue') {
+      allDivs[i].parentElement.remove()
+      i--
+    }
+  }
+  reRender()
+})
+const firstRender = () => {
+  container.appendChild(addChildButton)
+  container.appendChild(removeElementButton)
+  container.appendChild(createNode(1));
+  container.children[2].appendChild(createNode(2));
+  container.appendChild(createNode(1));
+  container.children[3].appendChild(createNode(2));
+  container.children[3].children[2].appendChild(createNode(3));
+  container.children[3].children[2].appendChild(createNode(3));
+  container.appendChild(createNode(1));
+  container.appendChild(createNode(1));
+  reRender()
+}
+firstRender()
+</script>
+</body>
+</html>

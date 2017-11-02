@@ -48,7 +48,7 @@ html
 
                 div(style={padding: '5px'})
                   a(href='search/'+tweet.id style={color: tweet.colour})  id: #{tweet.id}
-                form.delete-tweet(action='/delete/'+tweet.id method='POST')
+                form.delete-tweet(action='/delete/'+tweet.id method='GET')
                   button Delete
                 br
             else
@@ -58,7 +58,7 @@ html
               -const url = (_offset ) => '/search?offset='+_offset+'&limit='+limit
 
               -const currentPage = offset / limit + 1
-              -const lastPage = Math.ceil(count/limit)
+              -const lastPage = Math.ceil(count / limit)
               -const k = currentPage - 5 > 0 ? currentPage - 5 : 1
               -const n = k + 10 <= lastPage ? k + 10 : lastPage + 1
               -console.log({lastPage}, {k}, {n}, {currentPage})

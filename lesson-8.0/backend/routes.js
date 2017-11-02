@@ -181,7 +181,7 @@ Routes.push({
 })
 
 Routes.push({
-  method: 'POST',
+  method: 'GET',
   path: '/delete/{id}',
   handler: Handlers.deleteByID,
   config: {

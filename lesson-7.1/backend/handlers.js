@@ -55,42 +55,42 @@ Handlers.rootEndpoint = (req, reply) => {
   reply.redirect('/search')
 }
 
-// Handlers.apiSearchEndpoint = (req, reply) => {
-//   console.log('Handlers.apiSearchEndpoint', 'method=',req.method, req.url.path)
-//   const { offset, limit } = req.query
-//   let segments
-//   Database.countTweets()
-//   .then((result) => segments=result)
-//   const pagination = Object.assign({}, {offset}, {limit}, {segments})
-//   console.log(pagination)
-//   return Database.getTweets(offset, limit)
-//   .then((tweets) => reply.view('pagination', tweets, pagination))
-//   .catch((err) => {
-//      reply(Boom.badRequest(err))
-//     // reply(Utils.handleBoom(err))
-//   })
-// }
-
 Handlers.apiSearchEndpoint = (req, reply) => {
   console.log('Handlers.apiSearchEndpoint', 'method=',req.method, req.url.path)
-  let { offset, limit, segment } = req.query
-  const t = Math.ceil(offset/(limit*10))
-  const r = offset % (limit * 10)
-  let segment1 = r === 0 ? t + 1 : t
-  console.log({segment1})
-  //offset = offset === 0 ? 1 : offset * limit
-  let pagination = {}
-  return Database.countTweets()
-  .then((count) =>
-    pagination = Utils.getPaginationObj(segment, offset, limit, count))
-  .then(() => Database.getTweets(offset, limit))
-  .then((tweets) => {
-    const renderObj = Object.assign({}, pagination, tweets)
-    console.log(pagination)
-    return reply.view('pagination', renderObj)
+  const { offset, limit } = req.query
+  let segments
+  Database.countTweets()
+  .then((result) => segments=result)
+  const pagination = Object.assign({}, {offset}, {limit}, {segments})
+  console.log(pagination)
+  return Database.getTweets(offset, limit)
+  .then((tweets) => reply.view('pagination', tweets, pagination))
+  .catch((err) => {
+     reply(Boom.badRequest(err))
+    // reply(Utils.handleBoom(err))
   })
-  .catch((err) => reply(Utils.handleBoom(err)))
 }
+
+// Handlers.apiSearchEndpoint = (req, reply) => {
+//   console.log('Handlers.apiSearchEndpoint', 'method=',req.method, req.url.path)
+//   let { offset, limit, segment } = req.query
+//   const t = Math.ceil(offset/(limit*10))
+//   const r = offset % (limit * 10)
+//   let segment1 = r === 0 ? t + 1 : t
+//   console.log({segment1})
+//   //offset = offset === 0 ? 1 : offset * limit
+//   let pagination = {}
+//   return Database.countTweets()
+//   .then((count) =>
+//     pagination = Utils.getPaginationObj(segment, offset, limit, count))
+//   .then(() => Database.getTweets(offset, limit))
+//   .then((tweets) => {
+//     const renderObj = Object.assign({}, pagination, tweets)
+//     console.log(pagination)
+//     return reply.view('pagination', renderObj)
+//   })
+//   .catch((err) => reply(Utils.handleBoom(err)))
+// }
 
 Handlers.createEndpoint = (req, reply) => {
   console.log('Handlers.createEndpoint', 'method=',req.method, req.url.path,'payload', req.payload)

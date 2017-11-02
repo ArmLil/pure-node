@@ -1,0 +1,17 @@
+<div class="header">
+    <h1>{{custom_title title}}</h1>
+</div>
+<div class="body">
+    <p>{{body}}</p>
+</div>
+<div class="footer">
+    </div>
+    <ul>
+      {{#each tags}}
+        <li>
+          <p>{{this.user}}</p>
+          <p>{{this.tweet}}</p>
+        </li>
+      {{/each}}
+    </ul>
+</div>
