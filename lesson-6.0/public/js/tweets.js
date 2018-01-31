@@ -25,7 +25,6 @@ const renderList =(tweets) => {
 
 
 const loadTweets = () => {
-  console.log('XMLHttpRequest loadTweets')
   const xhr = new XMLHttpRequest();
   xhr.open('GET', '/api/tweets', true)
 

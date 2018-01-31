@@ -23,14 +23,12 @@ Handlers.search = (req, reply) => {
   const uri = TWEET_ROOT
 
   let cookie = req.state.sessionSearch
-  console.log({cookie})
   if(!cookie) {
     cookie = {
       firstvisit: false
     }
   }
   if(user) cookie.username = user
-  console.log({cookie})
 
   cookie.lastVisit = Date.now().toLocaleString()
   const options = {
